@@ -1,8 +1,22 @@
 
-
+If:
+  PathMatch: src/main/.*
 CompileFlags:
-  CompilationDatabase: .pio/build/leonardo
- 
+  CompilationDatabase: .pio/build/main
+---
+
+If:
+  PathMatch: src/driver/.*
+CompileFlags:
+  CompilationDatabase: .pio/build/driver
+---
+
+If:
+  PathMatch: src/shared/.*
+CompileFlags:
+  CompilationDatabase: .pio/build/main
+---
+
 Diagnostics:
   ClangTidy:
     Add: [
