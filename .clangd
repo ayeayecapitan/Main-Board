@@ -2,19 +2,19 @@
 If:
   PathMatch: src/main/.*
 CompileFlags:
-  CompilationDatabase: .pio/build/main
+  CompilationDatabase: .compilationdb/main
 ---
 
 If:
   PathMatch: src/driver/.*
 CompileFlags:
-  CompilationDatabase: .pio/build/driver
+  CompilationDatabase: .compilationdb/driver
 ---
 
 If:
   PathMatch: src/shared/.*
 CompileFlags:
-  CompilationDatabase: .pio/build/main
+  CompilationDatabase:  .compilationdb/main
 ---
 
 Diagnostics:

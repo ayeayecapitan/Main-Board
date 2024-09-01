@@ -1,9 +1,10 @@
 #include <Arduino.h>
 #include <Ethernet.h>
-#include "pins.h"
-#include "I2CScanner.h"
 
-#include "shared/i2c_master.hpp"
+#include "pins.hpp"
+#include "ethernet_communication.hpp"
+#include "pins_arduino.h"
+
 
 
 
@@ -29,7 +30,6 @@ obsługa karty SD (SPI D7)
 Obsługa ethernetu (SPI D5)
 
 */ 
-
 //TODO:
 //1. Downlink
 //2. Uplink
@@ -38,27 +38,25 @@ Obsługa ethernetu (SPI D5)
 //6. Files
 //8. Errr codes
 
-
-
-
-
-//byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; // MAC address
-//byte ip[] = { 172, 16, 18, 181 };  // IP address
-
-
-// I2CMaster master{0x42};
-
-I2CScanner scanner;
 void setup() {
+    delay(1000); // wait for the serial monitor to open
+
     Serial.begin(9600);
-    while (!Serial) {};
-    scanner.Init(); 
-    // const char *message = "Hello, Slave!";
-    // master.sendMessage(message);
-    // Serial.println("Message sent to slave.");
+    EthernetCommunication.init();
+
+    //digitalWrite(1, 2);
 }
 
+unsigned long lastMicros = 0;
+
 void loop() {
-    scanner.Scan();
-    delay(5000);
+    auto now = micros();
+    auto delta = now - lastMicros;
+    lastMicros = now;
+
+    Serial.print("Loop time: ");
+    Serial.println(delta);
+
+    EthernetCommunication.update();
+    
 }
