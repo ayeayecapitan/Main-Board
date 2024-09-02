@@ -5,8 +5,31 @@
 #include "ethernet_communication.hpp"
 #include "pins_arduino.h"
 
+#include "shared/data.hpp"
+#include "shared/i2c_master.hpp"
 
 
+
+I2CMaster i2cMaster(driver_board::I2C_ADDRESS);
+
+void setup() {
+    delay(1000); // wait for the monitor serial port to be available
+
+    Serial.begin(9600);
+    // EthernetCommunication.init();
+
+    // Wire.setClock(400000);
+
+    i2cMaster.init();
+}
+
+void loop() {
+    // EthernetCommunication.update();
+
+    i2cMaster.sendMessage("Hello");
+    
+    delay(1000);
+}
 
 //Main board pinout
 // GPS - UART, I2C 0x42
@@ -37,26 +60,3 @@ Obsługa ethernetu (SPI D5)
 //5. Telecommands
 //6. Files
 //8. Errr codes
-
-void setup() {
-    delay(1000); // wait for the serial monitor to open
-
-    Serial.begin(9600);
-    EthernetCommunication.init();
-
-    //digitalWrite(1, 2);
-}
-
-unsigned long lastMicros = 0;
-
-void loop() {
-    auto now = micros();
-    auto delta = now - lastMicros;
-    lastMicros = now;
-
-    Serial.print("Loop time: ");
-    Serial.println(delta);
-
-    EthernetCommunication.update();
-    
-}

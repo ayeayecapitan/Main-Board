@@ -7,7 +7,7 @@
 #include <EthernetUdp.h>
 #include <SPI.h>
 
-#include "data.hpp"
+#include "shared/data.hpp"
 
 #include "network_config.hpp"
 
@@ -18,7 +18,7 @@ class EthernetCommunication
     EthernetUDP _gcs_udp;
 
     GcsCommand _command;
-    MainBoardState _state;
+    SystemState _state;
 
 public:
     // Delete copy and move constructors
@@ -95,20 +95,12 @@ public:
         // After checks packet is available and with size 1 to sizeof(_receiveBuffer)
         _gcs_udp.read((uint8_t *)&_command, packet_size);
 
-        // Process the command
-        // Serial.print("Received command: ");
-        // Serial.print(_command.type);
-        // Serial.print(" with value: ");
-        // Serial.println(_command.param);
-
-
         // Send state to gcs
         _state.timestamp_ns = micros() * 1000; // Todo use RTC
-        _state.altitude = 100;
-        _state.latitude = 12;
-        _state.longitude = 10;
-        _state.satellite_numbers = 5;
-        _state.temperature = 25;
+        _state.gps.altitude = 100;
+        _state.gps.latitude = 12;
+        _state.gps.longitude = 10;
+        _state.gps.satellites = 5;
 
         _gcs_udp.beginPacket(network::ground_station::IP, network::ground_station::UDP_PORT);
         _gcs_udp.write((uint8_t *)&_state, sizeof(_state));

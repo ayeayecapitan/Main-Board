@@ -1,13 +1,18 @@
 #include <Arduino.h>
+#include "shared/data.hpp"
 #include "shared/i2c_slave.hpp"
 
-#define SLAVE_ADDRESS 0x08  // This should match the master's target address
+#include "pins_arduino.h"
 
-I2CSlave slave(SLAVE_ADDRESS);
+I2CSlave slave(driver_board::I2C_ADDRESS);
+
+//SystemState state;
 
 void setup() {
-    Serial.begin(9600);
-    Serial.println("Slave ready to receive messages.");
+    delay(1000); // wait for the monitor serial port to be available
+    Serial.begin(115200);
+
+    slave.init();
 }
 
 
