@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <pins_arduino.h>
 
 namespace driver_board{
     constexpr int I2C_ADDRESS = 0x8;
@@ -23,7 +24,7 @@ namespace valve
         ERROR   // Obie krańcówki są w stanie ON (TODO: pomyśleć nad innymi przypadkami)
     };
 
-    namespace index
+    namespace state_index
     {
         constexpr uint8_t V1_INLET = 0;
         constexpr uint8_t V1_OUTLET = 1;
@@ -80,7 +81,7 @@ namespace motor
         CLOSING
     };
 
-    namespace index
+    namespace state_index
     {
         constexpr uint8_t M1_INLET = 0;
         constexpr uint8_t M1_OUTLET = 1;
@@ -118,7 +119,7 @@ namespace pump
         ON
     };
        
-    namespace index
+    namespace state_index
     {
         constexpr uint8_t P_SPE = 0;
         constexpr uint8_t P_CHEM = 1;
@@ -141,28 +142,48 @@ namespace pressure {
 }
 
 namespace temperature {
-    constexpr uint8_t COUNT = 5;
+    constexpr uint8_t COUNT = 8;
+    constexpr uint8_t DS18B20_COUNT = 5;
 
-    namespace index
+    namespace state_index
     {
-        constexpr uint8_t DS18B20_1 = 0;
-        constexpr uint8_t DS18B20_2 = 1;
-        constexpr uint8_t PT100_1 = 2;
-        constexpr uint8_t PT100_2 = 3;
-        constexpr uint8_t HONEYWELL = 4;
+        constexpr uint8_t DS18B20_1_OUTSIDE = 0;
+        constexpr uint8_t DS18B20_2_OUTSIDE = 1;
+        constexpr uint8_t DS18B20_3_OUTSIDE = 2;
+        constexpr uint8_t DS18B20_4_OUTSIDE = 3;
+        constexpr uint8_t DS18B20_5_INSIDE = 4;
+        constexpr uint8_t PT100_1 = 5;
+        constexpr uint8_t PT100_2 = 6;
+        constexpr uint8_t HONEYWELL = 7;
     }
     
     namespace driver_board
     {
         namespace spi
         {
-            constexpr int PT100_1 = 0;
-            constexpr int PT100_2 = 1;
+            constexpr int PT100_1 = 40;
+            constexpr int PT100_2 = 41;
         }
 
         namespace i2c
         {
             constexpr uint8_t HONEYWELL = pressure::i2c::HONEYWELL;
+        }
+
+        namespace one_wire{
+            constexpr int DS18B20_COUNT = 5;
+
+            namespace pin {
+                constexpr int DS18B20_ALL = 5;
+            }
+
+            namespace index {
+                constexpr uint8_t DS18B20_1_OUTSIDE = 0;
+                constexpr uint8_t DS18B20_2_OUTSIDE = 1;
+                constexpr uint8_t DS18B20_3_OUTSIDE = 2;
+                constexpr uint8_t DS18B20_4_OUTSIDE = 3;
+                constexpr uint8_t DS18B20_5_INSIDE = 4;
+            }
         }
     }
 }

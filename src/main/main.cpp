@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Ethernet.h>
 
+#include "driver_board_comm.hpp"
 #include "pins.hpp"
 #include "ethernet_communication.hpp"
 #include "pins_arduino.h"
@@ -8,25 +9,21 @@
 #include "shared/data.hpp"
 #include "shared/i2c_master.hpp"
 
-
-
-I2CMaster i2cMaster(driver_board::I2C_ADDRESS);
+DriverBoardInterface driver_board_interface(driver_board::I2C_ADDRESS);
 
 void setup() {
     delay(1000); // wait for the monitor serial port to be available
 
     Serial.begin(9600);
-    // EthernetCommunication.init();
 
-    // Wire.setClock(400000);
-
-    i2cMaster.init();
+    EthernetCommunication.init();
+    driver_board_interface.init();
 }
 
 void loop() {
     // EthernetCommunication.update();
 
-    i2cMaster.sendMessage("Hello");
+    driver_board_interface.sendMessage("Hello");
     
     delay(1000);
 }
