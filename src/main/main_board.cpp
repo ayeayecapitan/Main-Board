@@ -1,31 +1,36 @@
 #include <Arduino.h>
 #include <Ethernet.h>
 
-#include "driver_board_comm.hpp"
-#include "pins.hpp"
+#include "driver_board_interface.hpp"
 #include "ethernet_communication.hpp"
-#include "pins_arduino.h"
 
 #include "shared/data.hpp"
-#include "shared/i2c_master.hpp"
 
-DriverBoardInterface driver_board_interface(driver_board::I2C_ADDRESS);
+DriverBoardInterface driver_board_interface(driver_board::I2C_ADDRESS); // NOLINT - global variable
 
 void setup() {
     delay(1000); // wait for the monitor serial port to be available
 
-    Serial.begin(9600);
+    Serial.begin(main_board::SERIAL_BAUD_RATE);
 
     EthernetCommunication.init();
     driver_board_interface.init();
 }
 
+GcsCommand command;
 void loop() {
-    // EthernetCommunication.update();
+    EthernetCommunication.update();
 
-    driver_board_interface.sendMessage("Hello");
-    
-    delay(1000);
+   
+    command.timestamp_us = micros();
+    command.x = command.x + 1;
+    command.y = command.y + 1;
+
+    Serial.println("SENDING COMMAND");
+    Serial.println(command);
+    Serial.println();
+    driver_board_interface.sendCommand(command);
+    delay(3000);
 }
 
 //Main board pinout

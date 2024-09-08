@@ -2,112 +2,62 @@
 #include <Arduino.h>
 #include <pins_arduino.h>
 
-namespace driver_board{
-    constexpr int I2C_ADDRESS = 0x8;
-}
-
 namespace valve
 {
     constexpr uint8_t COUNT = 8;
 
-    namespace command
-    {
-        
-    }
-
     enum state : uint8_t
     {
         UNSET = 0,
-        CLOSED,
-        OPEN,
-        PENDING, // Obie krańcówki są w stanie OFF
-        ERROR   // Obie krańcówki są w stanie ON (TODO: pomyśleć nad innymi przypadkami)
+        CLOSED,     // CLOSED endstop is ON, OPEN endstop is OFF
+        OPENING,    // Both endstops are OFF, motor is ON with OPENING direction
+        OPEN,       // OPEN endstop is ON, CLOSED endstop is OFF
+        CLOSING,    // Both endstops are OFF, motor is ON with CLOSING direction
+        INCOMPLETE, // Both endstops are OFF, motor is OFF
+        ERROR       // Both endstops are ON, motor is OFF
     };
 
-    namespace state_index
+    namespace index
     {
-        constexpr uint8_t V1_INLET = 0;
-        constexpr uint8_t V1_OUTLET = 1;
-        constexpr uint8_t V2_INLET = 2;
-        constexpr uint8_t V2_OUTLET = 3;
-        constexpr uint8_t V3_INLET = 4;
-        constexpr uint8_t V3_OUTLET = 5;
-        constexpr uint8_t V4_INLET = 6;
-        constexpr uint8_t V4_OUTLET = 7;
+        constexpr int NONE = -1;
+        constexpr int PROBE_1_INLET = 0;
+        constexpr int PROBE_1_OUTLET = 1;
+        constexpr int PROBE_2_INLET = 2;
+        constexpr int PROBE_2_OUTLET = 3;
+        constexpr int PROBE_3_INLET = 4;
+        constexpr int PROBE_3_OUTLET = 5;
+        constexpr int PROBE_4_INLET = 6;
+        constexpr int PROBE_4_OUTLET = 7;
     }
-
-    namespace driver_board
-    {
-        namespace pin
-        {
-            //First pair
-            constexpr int V1_INLET_OPENED = 11;
-            constexpr int V1_OUTLET_CLOSED = 10;
-
-            //Second pair
-            constexpr int V2_INLET_OPENED = 0;
-            constexpr int V2_OUTLET_CLOSED = 0;
-
-            //Third pair
-            constexpr int V3_INLET_OPENED = 0;
-            constexpr int V3_OUTLET_CLOSED = 0;
-            
-            //Fourth pair
-            constexpr int V4_INLET_OPENED = 6;
-            constexpr int V4_OUTLET_CLOSED = 7;
-        }
-        //Endstops paired in [Endstop, valve]-[SPE column]-[Endstop, valve]
-    }
-
-
 }
 
-namespace motor
-{
-    constexpr uint8_t COUNT = 8;
+namespace probe {
+    constexpr uint8_t COUNT = 4;
 
-    enum class Direction : uint8_t
-    {
-        UNSET = 0,
-        OPENING,
-        BACKWARD
-    };
-
-    enum class state : uint8_t
-    {
-        UNSET = 0,
-        OFF,
-        OPENING,
-        CLOSING
-    };
-
-    namespace state_index
-    {
-        constexpr uint8_t M1_INLET = 0;
-        constexpr uint8_t M1_OUTLET = 1;
-        constexpr uint8_t M2_INLET = 2;
-        constexpr uint8_t M2_OUTLET = 3;
-        constexpr uint8_t M3_INLET = 4;
-        constexpr uint8_t M3_OUTLET = 5;
-        constexpr uint8_t M4_INLET = 6;
-        constexpr uint8_t M4_OUTLET = 7;
+    namespace index {
+        constexpr uint8_t PROBE_1 = 0;
+        constexpr uint8_t PROBE_2 = 1;
+        constexpr uint8_t PROBE_3 = 2;
+        constexpr uint8_t PROBE_4 = 3;
     }
 
-    namespace driver_board
+    struct Descriptor
     {
-        namespace pin
-        {
-            constexpr int M1_INLET = 0;
-            constexpr int M1_OUTLET = 1;
-            constexpr int M2_INLET = 2;
-            constexpr int M2_OUTLET = 3;
-            constexpr int M3_INLET = 4;
-            constexpr int M3_OUTLET = 5;
-            constexpr int M4_INLET = 6;
-            constexpr int M4_OUTLET = 7;
-        }
-    }
+        uint8_t inlet_valve_index;
+        uint8_t outlet_valve_index;
+
+        // TODO: auto mode params
+    };
+
+    constexpr Descriptor descriptor[COUNT] = {
+        {valve::index::PROBE_1_INLET, valve::index::PROBE_1_OUTLET},
+        {valve::index::PROBE_2_INLET, valve::index::PROBE_2_OUTLET},
+        {valve::index::PROBE_3_INLET, valve::index::PROBE_3_OUTLET},
+        {valve::index::PROBE_4_INLET, valve::index::PROBE_4_OUTLET}
+    };
 }
+
+
 
 namespace pump
 {
@@ -115,68 +65,44 @@ namespace pump
     
     enum class state : uint8_t
     {
+        UNSET = 0,
         OFF,
         ON
     };
-       
-    namespace state_index
-    {
-        constexpr uint8_t P_SPE = 0;
-        constexpr uint8_t P_CHEM = 1;
-    }
 
-    namespace driver_board
+    namespace index
     {
-        namespace pin
-        {
-            constexpr int P_SPE = 0;
-            constexpr int P_CHEM = 1;
-        }
+        constexpr uint8_t SPE_PROBES = 0;
+        constexpr uint8_t CHEM_PROBES = 1;
     }
 }
-
-namespace pressure {
-    namespace i2c {
-        constexpr uint8_t HONEYWELL = 0x28;
-    }
-}
-
 namespace temperature {
     constexpr uint8_t COUNT = 8;
-    constexpr uint8_t DS18B20_COUNT = 5;
-
-    namespace state_index
+    namespace index
     {
-        constexpr uint8_t DS18B20_1_OUTSIDE = 0;
-        constexpr uint8_t DS18B20_2_OUTSIDE = 1;
-        constexpr uint8_t DS18B20_3_OUTSIDE = 2;
-        constexpr uint8_t DS18B20_4_OUTSIDE = 3;
-        constexpr uint8_t DS18B20_5_INSIDE = 4;
-        constexpr uint8_t PT100_1 = 5;
-        constexpr uint8_t PT100_2 = 6;
-        constexpr uint8_t HONEYWELL = 7;
+        constexpr size_t DS18B20_1_OUTSIDE = 0;
+        constexpr size_t DS18B20_2_OUTSIDE = 1;
+        constexpr size_t DS18B20_3_OUTSIDE = 2;
+        constexpr size_t DS18B20_4_OUTSIDE = 3;
+        constexpr size_t DS18B20_5_INSIDE = 4;
+        constexpr size_t PT100_1 = 5;
+        constexpr size_t PT100_2 = 6;
+        constexpr size_t HONEYWELL = 7;
     }
-    
-    namespace driver_board
-    {
-        namespace spi
-        {
-            constexpr int PT100_1 = 40;
-            constexpr int PT100_2 = 41;
-        }
+}
 
-        namespace i2c
-        {
-            constexpr uint8_t HONEYWELL = pressure::i2c::HONEYWELL;
-        }
 
+namespace driver_board{
+    constexpr uint8_t I2C_ADDRESS = 0x8;
+    constexpr uint32_t SERIAL_BAUD_RATE = 115200;
+
+    namespace ds18b20 {
+        constexpr uint8_t COUNT = 5;
+
+        constexpr uint8_t PRECISION = 12; // TODO: Check if this is correct
         namespace one_wire{
-            constexpr int DS18B20_COUNT = 5;
 
-            namespace pin {
-                constexpr int DS18B20_ALL = 5;
-            }
-
+            constexpr int PIN = 5;
             namespace index {
                 constexpr uint8_t DS18B20_1_OUTSIDE = 0;
                 constexpr uint8_t DS18B20_2_OUTSIDE = 1;
@@ -186,64 +112,156 @@ namespace temperature {
             }
         }
     }
-}
 
-namespace gps {
-    namespace i2c
+    namespace honeywell {
+        namespace i2c {
+            constexpr uint8_t ADDRESS = 0x28;
+        }
+    }
+
+    namespace ina260 {
+        namespace i2c {
+            constexpr uint8_t ADDRESS = 0x40;
+        }
+    }
+
+    namespace pt100 {
+        constexpr uint8_t COUNT = 2;
+
+        constexpr float MAX_RAW_VALUE = 0xFFFF; // PT100 temperature = (reading / MAX_RAW_VALUE) * REFERENCE_RESISTANCE
+        constexpr float REFERENCE_RESISTANCE = 430.0; // PT100 temperature = (reading / MAX_RAW_VALUE) * REFERENCE_RESISTANCE
+
+
+        namespace spi
+        {
+            constexpr uint8_t PT100_1 = 40;
+            constexpr uint8_t PT100_2 = 41;
+        }
+
+        namespace index
+        {
+            constexpr uint8_t PT100_1 = 0;
+            constexpr uint8_t PT100_2 = 1;
+        }
+    }
+
+    namespace gps {
+        namespace i2c
+        {
+            constexpr uint8_t ADDRESS = 0x42;
+        }
+    }
+
+
+    namespace heater {
+        constexpr uint8_t PIN = 38;
+    }
+
+
+    namespace valve {
+        constexpr int OPEN_CLOSE_TIMEOUT_MS = 2000;
+        struct Descriptor
+        {
+            uint8_t motor_pin;
+            uint8_t open_endstop_pin;
+            uint8_t closed_endstop_pin;
+        };
+
+        constexpr Descriptor descriptor[::valve::COUNT] = {
+            {12, 11, 10},  // V1_INLET
+            {9 , 7 , 8 },  // V1_OUTLET
+            {A0, 2 , 3 },  // V2_INLET
+            {A1, 28, 29},  // V2_OUTLET
+            {A2, 31, 30},  // V3_INLET
+            {25, 33, 32},  // V3_OUTLET
+            {26, 35, 34},  // V4_INLET
+            {27, 37, 36}   // V4_OUTLET
+        };
+
+        namespace motor {
+            
+            namespace pin
+            {
+                constexpr uint8_t DIRECTION_ALL = 13;
+            }
+
+            enum class Direction : uint8_t
+            {
+                CLOSING = 0,
+                OPENING = 1
+            };
+        }
+
+    }
+
+    namespace pump
     {
-        constexpr uint8_t GPS = 0x42;
+        namespace pin
+        {
+            constexpr uint8_t SPE_PROBES = 39;
+            constexpr uint8_t CHEM_PROBES = 40;
+        }
     }
+
 }
 
-namespace heater {
-    namespace pin {
-        constexpr int HEATER = 38;
-    }
+namespace main_board{
+    constexpr uint32_t SERIAL_BAUD_RATE = 9600;
 }
-
 
 
 // Command from Ground Control Station
 struct GcsCommand
 {
-    uint64_t timestamp_ns;
-
-    uint8_t x,y;
-
+    uint32_t timestamp_us = 0;
+    uint32_t x = 0;
+    uint32_t y = 0;
     // uint8_t motor_desired_status[motor::COUNT];
     // uint8_t valve_desired_status[valve::COUNT];
     // uint8_t pump_desired_status[pump::COUNT];
 
     // When auto_mode is true, the board should ignore the motor_desired_status, valve_desired_status and pump_desired_status fields
     // bool auto_mode;
+
+    operator String() const
+    {
+        return "GCS Command\t[timestamp: " + String(timestamp_us) + " us, x: " + String(x) + ", y: " + String(y) + "]";
+    }
 };
 
-struct SystemState
+
+
+String toString(pump::state state)
 {
-    uint64_t timestamp_ns = 0;
+    switch (state)
+    {
+        case pump::state::UNSET:
+            return "UNSET";
+        case pump::state::OFF:
+            return "OFF";
+        case pump::state::ON:
+            return "ON";
+        default:
+            return "UNKNOWN";
+    }
+}
 
-    struct {
-        float altitude = 0;
-        float latitude = 0;
-        float longitude = 0;
-        uint8_t satellites = 0;
-    } gps;
 
-    struct {
-        float pressure = 0;
-        float temperature[temperature::COUNT] = {0};
-    } sensors;
-
-    struct {
-        float voltage = 0;
-        float current = 0;
-        float power = 0;
-    } supply;
-
-    struct {
-        motor::Direction motors_direction = motor::Direction::UNSET;
-        uint8_t motor_state[motor::COUNT] = {0};
-        uint8_t valve_state[valve::COUNT] = {0};
-        uint8_t pump_state[pump::COUNT] = {0};
-    } devices;
-};
+String toString(valve::state state)
+{
+    switch (state)
+    {
+        case valve::state::UNSET:
+            return "UNSET";
+        case valve::state::CLOSED:
+            return "CLOSED";
+        case valve::state::OPEN:
+            return "OPEN";
+        case valve::state::INCOMPLETE:
+            return "PENDING";
+        case valve::state::ERROR:
+            return "ERROR";
+        default:
+            return "UNKNOWN";
+    }
+}

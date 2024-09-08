@@ -69,5 +69,9 @@
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "C_Cpp.intelliSenseEngine": "disabled",
   "C_Cpp.clang_format_style": "Visual Studio",
-  "C_Cpp.formatting": "vcFormat"
+  "C_Cpp.formatting": "vcFormat",
+  "cSpell.words": [
+    "Adafruit",
+    "endstop"
+  ]
 }

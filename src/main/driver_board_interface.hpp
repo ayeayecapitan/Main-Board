@@ -2,6 +2,7 @@
 #include "Spi.h"
 #include "Wire.h"
 #include "shared/data.hpp"
+#include "shared/system_state.hpp"
 
 class DriverBoardInterface {
     
@@ -20,7 +21,7 @@ class DriverBoardInterface {
         return _initialized;
     }
 
-    void sendCommand(const GcsCommand *command)
+    void sendCommand(const GcsCommand &command)
     {
         if (!_initialized) {
             Serial.println("[ERROR] [DriverBoardInterface]: I2C not initialized");
@@ -28,7 +29,7 @@ class DriverBoardInterface {
         }
 
         Wire.beginTransmission(_driver_board_i2c_address);
-        Wire.write((uint8_t*)&command, sizeof(GcsCommand));
+        Wire.write((uint8_t*)&command, sizeof(command));
         Wire.endTransmission(true);
     }
 

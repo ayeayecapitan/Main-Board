@@ -8,6 +8,7 @@
 #include <SPI.h>
 
 #include "shared/data.hpp"
+#include "shared/system_state.hpp"
 
 #include "network_config.hpp"
 
@@ -96,7 +97,7 @@ public:
         _gcs_udp.read((uint8_t *)&_command, packet_size);
 
         // Send state to gcs
-        _state.timestamp_ns = micros() * 1000; // Todo use RTC
+        _state.timestamp_us = micros(); // Todo use RTC
         _state.gps.altitude = 100;
         _state.gps.latitude = 12;
         _state.gps.longitude = 10;
