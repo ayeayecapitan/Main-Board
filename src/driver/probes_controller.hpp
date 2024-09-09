@@ -61,5 +61,4 @@ class SpeProbe
         {
             digitalWrite(driver_board::pump::pin::SPE_PROBES, LOW);
         }
-}
-
+};
