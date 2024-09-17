@@ -41,6 +41,13 @@ namespace probe {
         constexpr uint8_t PROBE_4 = 3;
     }
 
+    enum class State : uint8_t
+    {
+        UNSET = 0,
+        OFF,
+        ON
+    };
+
     struct Descriptor
     {
         uint8_t inlet_valve_index;
@@ -210,26 +217,17 @@ namespace main_board{
 }
 
 
-// Command from Ground Control Station
-struct GcsCommand
+String toString(uint64_t timestamp_us)
 {
-    uint32_t timestamp_us = 0;
-    uint32_t x = 0;
-    uint32_t y = 0;
-    // uint8_t motor_desired_status[motor::COUNT];
-    // uint8_t valve_desired_status[valve::COUNT];
-    // uint8_t pump_desired_status[pump::COUNT];
+    // String() has no overload for uint64_t
+    // we split the timestamp into two uint32_t
+    // and concatenate them as strings
+    uint32_t high = timestamp_us >> 32;
+    uint32_t low = timestamp_us & 0xFFFFFFFF;
 
-    // When auto_mode is true, the board should ignore the motor_desired_status, valve_desired_status and pump_desired_status fields
-    // bool auto_mode;
-
-    operator String() const
-    {
-        return "GCS Command\t[timestamp: " + String(timestamp_us) + " us, x: " + String(x) + ", y: " + String(y) + "]";
-    }
-};
-
-
+    if(high == 0) return String(low);
+    return String(high) + String(low);
+}
 
 String toString(pump::state state)
 {

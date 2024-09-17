@@ -13,35 +13,37 @@ sock.settimeout(0)
 
 
 
-# // Ground Control Station (GCS) command
-# struct GcsCommand {
-#     static const uint8_t TEST = 0;
+# # // Ground Control Station (GCS) command
 
-#     uint64_t timestamp_ns;
-#     uint8_t type;
-#     uint8_t param;
+# namespace probe
+# {
+#   const uint8_t COUNT = 4;
+# }
+
+# enum class State : uint8_t
+# {
+#     UNSET = 0,
+#     OFF,
+#     ON
 # };
 
-# // State which gcs receives from main board
-# struct MainBoardState {
-#     uint64_t timestamp_ns;
-
-#     float altitude = 0;
-#     float latitude = 0;
-#     float longitude = 0; 
-#     uint8_t satellite_numbers = 0;
-#     uint8_t temperature;
+# struct GroundCommand
+# {
+#     uint64_t timestamp_us = 0;
+#     probe::State probe_desired_state[probe::COUNT];
 # };
-
 
 # https://docs.python.org/3/library/struct.html
 # We pack the data into a binary format which matches the main board's struct layout
 
-command = struct.pack('QBB', 123, 1, 2)
+
+
 
 while True:
+    now_us = int(time.time() * 1e6)
+    command = struct.pack('<QBBBB', now_us, 1, 1, 1, 1)
     sock.sendto(command, main_board_addr)
-    
+    time.sleep(3)
     # check if
     try:
         data, _ = sock.recvfrom(22)
@@ -63,4 +65,4 @@ while True:
     except BlockingIOError:
         continue
     
-    time.sleep(3)
+    

@@ -2,9 +2,10 @@
 #include <Ethernet.h>
 
 #include "driver_board_interface.hpp"
-#include "ethernet_communication.hpp"
+#include "ground_station_interface.hpp"
 
 #include "shared/data.hpp"
+#include "shared/ground_command.hpp"
 
 DriverBoardInterface driver_board_interface(driver_board::I2C_ADDRESS); // NOLINT - global variable
 
@@ -13,24 +14,24 @@ void setup() {
 
     Serial.begin(main_board::SERIAL_BAUD_RATE);
 
-    EthernetCommunication.init();
+    GroundStationInterface.init();
     driver_board_interface.init();
 }
 
-GcsCommand command;
+GroundCommand command;
+
 void loop() {
-    EthernetCommunication.update();
+    GroundStationInterface.processIncomingData();
 
-   
-    command.timestamp_us = micros();
-    command.x = command.x + 1;
-    command.y = command.y + 1;
+    if(GroundStationInterface.commandAvailable(command.timestamp_us))
+    {
+        command = GroundStationInterface.latestCommand();
 
-    Serial.println("SENDING COMMAND");
-    Serial.println(command);
-    Serial.println();
-    driver_board_interface.sendCommand(command);
-    delay(3000);
+        Serial.println("RECEIVED COMMAND FROM GROUND STATION");
+        Serial.println(command);
+        driver_board_interface.sendCommand(command);
+        Serial.println("FORWARDED COMMAND TO DRIVER BOARD");
+    }
 }
 
 //Main board pinout

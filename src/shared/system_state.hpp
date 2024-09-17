@@ -3,7 +3,7 @@
 
 struct SystemState
 {
-    uint32_t timestamp_us = 0;
+    uint64_t timestamp_us = 0;
 
     struct GpsData {
         float altitude = 0;
@@ -79,7 +79,7 @@ SystemState::Devices::operator String() const
 SystemState::operator String() const
 {
     return String("\n\nSYSTEM STATE\n")
-        + "timestamp\t" + String(timestamp_us) + " us\n"
+        + "timestamp\t" + toString(timestamp_us) + " us\n"
         + String(gps) + "\n"
         + String(sensors) + "\n"
         + String(devices) + "\n\n";

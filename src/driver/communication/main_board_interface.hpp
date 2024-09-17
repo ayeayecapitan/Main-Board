@@ -1,6 +1,6 @@
 #pragma once
 #include "Wire.h"
-#include "shared/data.hpp"
+#include "shared/ground_command.hpp"
 
 class MainBoardInterface {
 private:
@@ -8,7 +8,7 @@ private:
 
 
     bool _command_available = false;
-    GcsCommand _command;
+    GroundCommand _command;
 
     static MainBoardInterface *_instance;
 public:
@@ -46,14 +46,14 @@ public:
             return;
         }
 
-        if(numBytes != sizeof(GcsCommand)){
+        if(numBytes != sizeof(GroundCommand)){
             Serial.println("Invalid message size");
             while(Wire.available() > 0) // empty the buffer
                 Wire.read();
             return;
         }
 
-        GcsCommand new_command;
+        GroundCommand new_command;
         auto num_read = Wire.readBytes((uint8_t*)&new_command, sizeof(new_command));
         if(num_read != sizeof(new_command)){
             Serial.println("Error reading command");
@@ -63,8 +63,11 @@ public:
         _instance->_command_available = true;
     }
 
-    bool commandAvailable() const { return _command_available; }
-    const GcsCommand& latestCommand() const { return _command; }
+    bool commandAvailable(uint64_t last_timestamp) const 
+    {
+        return _command_available && _command.timestamp_us > last_timestamp;
+    }
+    const GroundCommand& latestCommand() const { return _command; }
 };
 
 MainBoardInterface* MainBoardInterface::_instance = nullptr;

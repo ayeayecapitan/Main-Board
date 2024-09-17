@@ -7,29 +7,29 @@
 #include <EthernetUdp.h>
 #include <SPI.h>
 
-#include "shared/data.hpp"
-#include "shared/system_state.hpp"
-
 #include "network_config.hpp"
 
-class EthernetCommunication
+#include "shared/ground_command.hpp"
+#include "shared/system_state.hpp"
+
+class GroundStationInterface
 {
     bool _initialized = false;
 
     EthernetUDP _gcs_udp;
 
-    GcsCommand _command;
-    SystemState _state;
+    bool _command_available = false;
+    GroundCommand _command;
 
 public:
     // Delete copy and move constructors
-    EthernetCommunication(const EthernetCommunication &) = delete;
-    EthernetCommunication(EthernetCommunication &&) = delete;
-    EthernetCommunication &operator=(const EthernetCommunication &) = delete;
-    EthernetCommunication &operator=(EthernetCommunication &&) = delete;
+    GroundStationInterface(const GroundStationInterface &) = delete;
+    GroundStationInterface(GroundStationInterface &&) = delete;
+    GroundStationInterface &operator=(const GroundStationInterface &) = delete;
+    GroundStationInterface &operator=(GroundStationInterface &&) = delete;
 
     // One way to create the object
-    EthernetCommunication() = default;
+    GroundStationInterface() = default;
 
     bool init()
     {
@@ -67,7 +67,7 @@ public:
         return _initialized;
     }
 
-    void update()
+    void processIncomingData()
     {
         if (!_initialized)
         {
@@ -89,27 +89,43 @@ public:
         if (packet_size != sizeof(_command))
         {
             _gcs_udp.flush();
-            Serial.println("Packet size does not match GcsCommand size. Dropping.");
+            Serial.println("Packet size does not match GroundCommand size. Dropping.");
             return;
         }
 
         // After checks packet is available and with size 1 to sizeof(_receiveBuffer)
         _gcs_udp.read((uint8_t *)&_command, packet_size);
+        _command_available = true;
 
-        // Send state to gcs
-        _state.timestamp_us = micros(); // Todo use RTC
-        _state.gps.altitude = 100;
-        _state.gps.latitude = 12;
-        _state.gps.longitude = 10;
-        _state.gps.satellites = 5;
+   
+    }
+
+    bool commandAvailable(uint64_t last_stamp) const
+    {
+        return _command_available && _command.timestamp_us > last_stamp;
+    }
+
+    const GroundCommand& latestCommand()
+    {
+        return _command;
+    }
+
+    void sendState(const SystemState &state)
+    {
+        if (!_initialized)
+        {
+            Serial.println("Ethernet communication not initialized.");
+            return;
+        }
 
         _gcs_udp.beginPacket(network::ground_station::IP, network::ground_station::UDP_PORT);
-        _gcs_udp.write((uint8_t *)&_state, sizeof(_state));
-        if(_gcs_udp.endPacket() != 1)
+        _gcs_udp.write((uint8_t *)&state, sizeof(state));
+        if (_gcs_udp.endPacket() != 1)
         {
             Serial.println("Failed to send state to GCS.");
         }
     }
+
 };
 
-EthernetCommunication EthernetCommunication;
+GroundStationInterface GroundStationInterface; // NOLINT - global variable

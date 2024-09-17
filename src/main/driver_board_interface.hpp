@@ -1,7 +1,6 @@
 #pragma once
-#include "Spi.h"
 #include "Wire.h"
-#include "shared/data.hpp"
+#include "shared/ground_command.hpp"
 #include "shared/system_state.hpp"
 
 class DriverBoardInterface {
@@ -21,7 +20,7 @@ class DriverBoardInterface {
         return _initialized;
     }
 
-    void sendCommand(const GcsCommand &command)
+    void sendCommand(const GroundCommand &command)
     {
         if (!_initialized) {
             Serial.println("[ERROR] [DriverBoardInterface]: I2C not initialized");
