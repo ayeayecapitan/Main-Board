@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include "shared/data.hpp"
 
+#define SIMULATION
+
 class Valve
 {
     const driver_board::valve::Descriptor &_descriptor;
@@ -29,9 +31,15 @@ public:
 
     void init()
     {
+        #if defined(SIMULATION)
         pinMode(_descriptor.motor_pin, OUTPUT);
         pinMode(_descriptor.open_endstop_pin, INPUT_PULLUP);
         pinMode(_descriptor.closed_endstop_pin, INPUT_PULLUP);
+        #else
+        pinMode(_descriptor.motor_pin, OUTPUT);
+        pinMode(_descriptor.open_endstop_pin, OUTPUT);
+        pinMode(_descriptor.closed_endstop_pin, OUTPUT);
+        #endif
     }
 
     bool isOpen() const { return _is_open; }
@@ -45,6 +53,26 @@ public:
     bool closedEndstopHigh() const { return digitalRead(_descriptor.closed_endstop_pin) == HIGH; }
 
 
+    valve::state state()
+    {
+        auto openEndstop = openEndstopHigh();
+        auto closedEndstop = closedEndstopHigh();
+
+        if(!openEndstop && closedEndstop)
+            return valve::state::CLOSED;
+
+        if(openEndstop && !closedEndstop)
+            return valve::state::OPEN;
+
+        if(!openEndstop && !closedEndstop)
+            return valve::state::INCOMPLETE;
+
+        if(openEndstop && closedEndstop)
+            return valve::state::ERROR;
+
+        return valve::state::UNSET;
+    }
+
     void open()
     {
         // motor direction is set for all valves so this method should be blocking to avoid conflicts
@@ -57,6 +85,7 @@ public:
         setMotorsDirection(driver_board::valve::motor::Direction::OPENING);
         enableMotor();
 
+        #if defined(SIMULATION)
         while(!openEndstopHigh())
         {
             if(millis() - start_time > driver_board::valve::OPEN_CLOSE_TIMEOUT_MS)
@@ -66,9 +95,13 @@ public:
                 break;
             }
         }
-        disableMotor();
+        #else
+        digitalWrite(_descriptor.closed_endstop_pin, LOW);
+        delay(1000);
+        digitalWrite(_descriptor.open_endstop_pin, HIGH);
+        #endif
 
-        _is_open = true;
+        disableMotor();
     }
 
     void close()
@@ -84,6 +117,7 @@ public:
         setMotorsDirection(driver_board::valve::motor::Direction::CLOSING);
         enableMotor();
 
+        #if defined(SIMULATION)
         while(!closedEndstopHigh())
         {
             if(millis() - start_time > driver_board::valve::OPEN_CLOSE_TIMEOUT_MS)
@@ -92,9 +126,13 @@ public:
                 break;
             }
         }
-        disableMotor();
+        #else
+        digitalWrite(_descriptor.open_endstop_pin, LOW);
+        delay(1000);
+        digitalWrite(_descriptor.closed_endstop_pin, HIGH);
+        #endif
 
-        _is_open = false;
+        disableMotor();
     }
 
     static void setMotorsDirection(driver_board::valve::motor::Direction direction) 

@@ -1,9 +1,12 @@
 #include <Arduino.h>
 #include "shared/data.hpp"
+#include "shared/ground_command.hpp"
 #include "shared/system_state.hpp"
 
 #include "sensors_controller.hpp"
-#include "probes_controller.hpp"
+
+#include "spe_probe.hpp"
+#include "chemical_probe.hpp"
 
 #include "communication/main_board_interface.hpp"
 
@@ -11,7 +14,7 @@ MainBoardInterface main_board_interface(driver_board::I2C_ADDRESS);
 
 SensorsController sensors;
 
-SpeProbe SpeProbe[probe::COUNT] {
+SpeProbe spe_probes[probe::COUNT] {
     {probe::index::PROBE_1},
     {probe::index::PROBE_2},
     {probe::index::PROBE_3},
@@ -31,10 +34,49 @@ void setup()
 
 GroundCommand command;
 
+SpeProbe * getActiveProbe()
+{
+    for (auto &probe : spe_probes)
+    {
+        if (probe.isActive())
+            return &probe;
+    }
+    return nullptr;
+}
+
+SpeProbe * getNextProbeToStart(GroundCommand * command)
+{
+    for (auto &probe : spe_probes)
+    {
+        if (command->probe_desired_state[probe.index()] == probe::State::ON)
+            return &probe;
+    }
+    return nullptr;
+}
+
 void loop()
 {
-    Serial.println(sizeof(micros()));
+    // Update timestamp
+    state.timestamp_us = micros();
 
+    // Update sensors
+    state.sensors = sensors.read();
+
+    // Update valve states
+    for (auto &probe : spe_probes)
+        probe.getValveStates(state.devices.valve_state);
+
+    // Update pump states
+    state.devices.pump_state[pump::index::SPE_PROBES] = SpeProbe::pumpState();
+    state.devices.pump_state[pump::index::CHEMICAL_PROBES] = ChemicalProbe::pumpState();
+
+    // Disable I2C interrupts
+    main_board_interface.pause();
+
+    // Push new state to main board interface
+    main_board_interface.setState(state);
+   
+    // Check if new command is available
     if(main_board_interface.commandAvailable(command.timestamp_us))
     {
         command = main_board_interface.latestCommand();
@@ -42,60 +84,33 @@ void loop()
         Serial.println(command);
     }
 
-    state.timestamp_us = micros();
-    sensors.update();
-    state.sensors = sensors.read();
-    // state.gps = // TODO
-    // state.supply = // TODO
-    // state.devices = // TODOs
+    // Check if any probe is ON
+    SpeProbe * active_probe = getActiveProbe();
 
-    // TODO state needs to be send to main on request data i2c event
+    // If a probe is active, then we can only wait for close command
+    if (active_probe != nullptr)
+    {
+        // Check if the command is to close the active probe
+        auto active_probe_desired_state = command.probe_desired_state[active_probe->index()];
+        if (active_probe_desired_state == probe::State::OFF)
+        {
+            Serial.println("STOPPING ACTIVE PROBE " + String(active_probe->index()));
+            active_probe->stop();
+        }
+    }
+    // If no probe is active, then we can start a new probe
+    else
+    {
+        // Check if any probe is requested to be turned ON
+        SpeProbe * next_probe_to_start = getNextProbeToStart(&command);
+        if (next_probe_to_start != nullptr)
+        {
+            Serial.println("STARTING PROBE " + String(next_probe_to_start->index()));
+            next_probe_to_start->start();
+        }
+    }
 
-    // Disable I2C interrupts to handle valve motors safely
-    main_board_interface.pause();
-
-    // Handle probes
-
-    // TEST
-    // String command;
-    // command = Serial.readString();
-    // bool ok = false;
-
-    // int probe_number = -1;
-
-    // while (!ok) {
-    //     Serial.print("Type start [probe_number 1-4] to open valves and then start pump");
-    //     Serial.println("Type stop [probe_number 1-4] to stop pump and then close valves");
-    //     if (command.startsWith("start") && command.length() == 7)
-    //     {
-    //         probe_number = command[6] - '0' - 1;
-    //         if (probe_number >= 0 && probe_number < probe::COUNT)
-    //         {
-    //             ok = true;
-    //             Serial.println("Starting probe " + String(probe_number));
-    //             SpeProbe[probe_number].start();
-    //         }
-                
-    //     }
-    //     else if (command.startsWith("stop") && command.length() == 6)
-    //     {
-    //         probe_number = command[5] - '0' - 1;
-    //         if (probe_number >= 0 && probe_number < probe::COUNT)
-    //         {
-    //             ok = true;
-    //             Serial.println("Stopping probe " + String(probe_number));
-    //             SpeProbe[probe_number].stop();
-    //         }
-    //     }
-    //     if (!ok)
-    //         Serial.println("Invalid command");
-    // }
-    // read from Serial 
-
-
+    // Enable I2C interrupts
     main_board_interface.resume();
-
-    Serial.println(state);
-
-    delay(3000);
+    delay(500);
 }

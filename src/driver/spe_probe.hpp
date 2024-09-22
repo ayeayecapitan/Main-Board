@@ -9,15 +9,16 @@
 class SpeProbe
 {
     const probe::Descriptor &_descriptor;
+
+    uint8_t _probe_index;
     Valve _inlet { _descriptor.inlet_valve_index };
     Valve _outlet { _descriptor.outlet_valve_index };
 
-    bool _probing = false;
+    bool _active = false;
 
     public:
-        SpeProbe (uint8_t probe_index) : _descriptor(probe::descriptor[probe_index])
+        SpeProbe (uint8_t probe_index) : _descriptor(probe::descriptor[probe_index]), _probe_index(probe_index)
         {
-            
         }
 
         ~SpeProbe() = default;	
@@ -40,7 +41,7 @@ class SpeProbe
             _inlet.open();
             _outlet.open();
             enablePump();
-            _probing = true;
+            _active = true;
         }
 
         void stop()
@@ -48,9 +49,31 @@ class SpeProbe
             disablePump();
             _outlet.close();
             _inlet.close();
-            _probing = false;
+            _active = false;
         }
 
+        uint8_t index() const
+        {
+            return _probe_index;
+        }
+
+        bool isActive() const
+        {
+            return _active;
+        }
+
+        void getValveStates(valve::state valve_state[valve::COUNT])
+        {
+            valve_state[_descriptor.inlet_valve_index] = _inlet.state();
+            valve_state[_descriptor.outlet_valve_index] = _outlet.state();
+        }
+
+        static pump::State pumpState()
+        {
+            if(digitalRead(driver_board::pump::pin::SPE_PROBES) == HIGH)
+                return pump::State::ON;
+            return pump::State::OFF;
+        }
     private:
         static void enablePump()
         {

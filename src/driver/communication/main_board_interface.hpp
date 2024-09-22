@@ -1,14 +1,16 @@
 #pragma once
 #include "Wire.h"
 #include "shared/ground_command.hpp"
+#include "shared/system_state.hpp"
 
 class MainBoardInterface {
 private:
     uint8_t _address;
 
-
     bool _command_available = false;
     GroundCommand _command;
+
+    SystemState _state;
 
     static MainBoardInterface *_instance;
 public:
@@ -35,9 +37,16 @@ public:
         Wire.onReceive(&receiveEvent);
     }
 
-    static void requestEvent() {
+    void setState(const SystemState& state) {
+        _state = state;
+    }
 
-        
+    static void requestEvent() {
+        if(_instance == nullptr) {
+            Serial.println("MainBoardInterface not initialized");
+            return;
+        }
+        Wire.write((uint8_t*)&_instance->_state, sizeof(_instance->_state));
     }
 
     static void receiveEvent(int numBytes) {

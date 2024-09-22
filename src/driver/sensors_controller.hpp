@@ -5,6 +5,7 @@
 
 #include "hardware/ds18b20.hpp"
 #include "hardware/honeywell.hpp"
+// #include "hardware/gps.hpp"
 
 #include "shared/data.hpp"
 #include "shared/system_state.hpp"
@@ -18,6 +19,7 @@ class SensorsController
     Adafruit_MAX31865 _pt100_1 {driver_board::pt100::spi::PT100_1};
     Adafruit_MAX31865 _pt100_2 {driver_board::pt100::spi::PT100_2};
 
+    // GPS _gps;
     public:
         SensorsController() = default;
 
@@ -25,19 +27,19 @@ class SensorsController
             _ds18b20_sensors.init();
             _honeywell_sensor.init();
             _ina260.begin(driver_board::ina260::i2c::ADDRESS);
+
             _pt100_1.begin();
             _pt100_2.begin();
-        }
 
-        void update()
-        {
-            _ds18b20_sensors.update();
-            _honeywell_sensor.update();
+            // _gps.init();
         }
 
         SystemState::SensorsData read()
         {
+            update();
+
             SystemState::SensorsData data;
+
             // Temperature
             data.temperatures_c[temperature::index::DS18B20_1_OUTSIDE] = _ds18b20_sensors.readTemperatureC(driver_board::ds18b20::one_wire::index::DS18B20_1_OUTSIDE);
             data.temperatures_c[temperature::index::DS18B20_2_OUTSIDE] = _ds18b20_sensors.readTemperatureC(driver_board::ds18b20::one_wire::index::DS18B20_2_OUTSIDE);
@@ -51,10 +53,16 @@ class SensorsController
             // Pressure
             data.pressure_pa = _honeywell_sensor.readPressurePa();
 
+            // Gps
+            // data.gps.altitude = _gps.readAltitude();
+            // data.gps.latitude = _gps.readLatitude();
+            // data.gps.longitude = _gps.readLongitude();
+            // data.gps.satellites = _gps.readSatellites();
+
             // Power supply
-            data.voltage = _ina260.readBusVoltage();
-            data.current = _ina260.readCurrent();
-            data.power = _ina260.readPower();
+            data.power_supply.voltage = _ina260.readBusVoltage();
+            data.power_supply.current = _ina260.readCurrent();
+            data.power_supply.power = _ina260.readPower();
 
             return data;
         }
@@ -63,6 +71,13 @@ class SensorsController
         float pt100ToCelsius(uint16_t raw)
         {
             return (raw / driver_board::pt100::MAX_RAW_VALUE) * driver_board::pt100::REFERENCE_RESISTANCE;
+        }
+
+        void update()
+        {
+            _ds18b20_sensors.update();
+            _honeywell_sensor.update();
+            // _gps.update();
         }
 
 };

@@ -32,30 +32,17 @@ void loop() {
         driver_board_interface.sendCommand(command);
         Serial.println("FORWARDED COMMAND TO DRIVER BOARD");
     }
+    
+    SystemState state;
+    if(driver_board_interface.requestState(state))
+    {
+        Serial.println("RECEIVED STATE FROM DRIVER BOARD");
+        Serial.println(state);
+        GroundStationInterface.sendState(state);
+        Serial.println("FORWARDED STATE TO GROUND STATION");
+    }
 }
 
-//Main board pinout
-// GPS - UART, I2C 0x42
-// SD card - SPI D7
-// LED - D13
-// Ethernet - SPI D5
-// DS18B20 - D9 OneWire
-//RTC I2C bazowo 0x68
-
-/*TODO
-komunikacja z driver boardem (I2C lub OneWire)
-
-odczyt temperatury z DS18B20 (OneWire D9)
-
-odczyt danych z GPS (I2C)
-
-odczyt danych z RTC (I2C)
-
-obsługa karty SD (SPI D7)
-
-Obsługa ethernetu (SPI D5)
-
-*/ 
 //TODO:
 //1. Downlink
 //2. Uplink

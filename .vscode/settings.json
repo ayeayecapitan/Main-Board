@@ -73,5 +73,6 @@
   "cSpell.words": [
     "Adafruit",
     "endstop"
-  ]
+  ],
+  "clangd.onConfigChanged": "restart"
 }

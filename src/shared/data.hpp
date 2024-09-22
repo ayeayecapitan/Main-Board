@@ -10,9 +10,7 @@ namespace valve
     {
         UNSET = 0,
         CLOSED,     // CLOSED endstop is ON, OPEN endstop is OFF
-        OPENING,    // Both endstops are OFF, motor is ON with OPENING direction
         OPEN,       // OPEN endstop is ON, CLOSED endstop is OFF
-        CLOSING,    // Both endstops are OFF, motor is ON with CLOSING direction
         INCOMPLETE, // Both endstops are OFF, motor is OFF
         ERROR       // Both endstops are ON, motor is OFF
     };
@@ -70,7 +68,7 @@ namespace pump
 {
     constexpr uint8_t COUNT = 2;
     
-    enum class state : uint8_t
+    enum class State : uint8_t
     {
         UNSET = 0,
         OFF,
@@ -80,7 +78,7 @@ namespace pump
     namespace index
     {
         constexpr uint8_t SPE_PROBES = 0;
-        constexpr uint8_t CHEM_PROBES = 1;
+        constexpr uint8_t CHEMICAL_PROBES = 1;
     }
 }
 namespace temperature {
@@ -229,15 +227,15 @@ String toString(uint64_t timestamp_us)
     return String(high) + String(low);
 }
 
-String toString(pump::state state)
+String toString(pump::State state)
 {
     switch (state)
     {
-        case pump::state::UNSET:
+        case pump::State::UNSET:
             return "UNSET";
-        case pump::state::OFF:
+        case pump::State::OFF:
             return "OFF";
-        case pump::state::ON:
+        case pump::State::ON:
             return "ON";
         default:
             return "UNKNOWN";

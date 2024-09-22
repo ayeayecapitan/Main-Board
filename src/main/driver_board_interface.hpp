@@ -32,15 +32,20 @@ class DriverBoardInterface {
         Wire.endTransmission(true);
     }
 
-    void requestState(SystemState *state_out)
+    bool requestState(SystemState &state_out)
     {
         if (!_initialized) {
             Serial.println("[ERROR] [DriverBoardInterface]: I2C not initialized");
-            return;
+            return false;
         }
 
         Wire.requestFrom(_driver_board_i2c_address, sizeof(SystemState));
-        Wire.readBytes((uint8_t*)state_out, sizeof(SystemState));
+        auto num_bytes = Wire.readBytes((uint8_t*)&state_out, sizeof(SystemState));
+        if (num_bytes != sizeof(SystemState)) {
+            Serial.println("[ERROR] [DriverBoardInterface]: Failed to read SystemState from I2C");
+            return false;
+        }
+        return true;
     }
 
 };
