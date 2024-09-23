@@ -38,29 +38,29 @@ public:
             uint8_t mac[6] = {MAC[0], MAC[1], MAC[2], MAC[3], MAC[4], MAC[5]}; // NOLINT mac needs to be unsigned char * - not const
             EthernetClass::init(pinout::digital::ETHERNET);
             EthernetClass::begin(mac, network::main_board::IP);
-            Serial.print("Ethernet communication initialized with IP: ");
+            Serial.print(F("Ethernet communication initialized with IP: "));
             IP.printTo(Serial);
             Serial.println();
         }
 
         if (EthernetClass::hardwareStatus() == EthernetNoHardware)
         {
-            Serial.println("Ethernet shield was not found. Can't run without hardware.");
+            Serial.println(F("Ethernet shield was not found. Can't run without hardware."));
             return false;
         }
         if (EthernetClass::linkStatus() == LinkOFF)
         {
-            Serial.println("Ethernet cable is not connected.");
+            Serial.println(F("Ethernet cable is not connected."));
             return false;
         }
 
         if(_gcs_udp.begin(network::main_board::UDP_PORT) != 1)
         {
-            Serial.println("Failed to start UDP socket.");
+            Serial.println(F("Failed to start UDP socket."));
             return false;
         }
 
-        Serial.print("UDP socket started on port ");
+        Serial.print(F("UDP socket started on port "));
         Serial.println(network::main_board::UDP_PORT);
 
         _initialized = true;
@@ -71,7 +71,7 @@ public:
     {
         if (!_initialized)
         {
-            Serial.println("Ethernet communication not initialized.");
+            Serial.println(F("Ethernet communication not initialized."));
             return;
         }
 
@@ -82,14 +82,14 @@ public:
 
         if(packet_size < 0)
         {
-            Serial.println("Error reading packet.");
+            Serial.println(F("Error reading packet."));
             return;
         }
 
         if (packet_size != sizeof(_command))
         {
             _gcs_udp.flush();
-            Serial.println("Packet size does not match GroundCommand size. Dropping.");
+            Serial.println(F("Packet size does not match GroundCommand size. Dropping."));
             return;
         }
 
@@ -114,7 +114,7 @@ public:
     {
         if (!_initialized)
         {
-            Serial.println("Ethernet communication not initialized.");
+            Serial.println(F("Ethernet communication not initialized."));
             return;
         }
 
@@ -122,7 +122,7 @@ public:
         _gcs_udp.write((uint8_t *)&state, sizeof(state));
         if (_gcs_udp.endPacket() != 1)
         {
-            Serial.println("Failed to send state to GCS.");
+            Serial.println(F("Failed to send state to GCS."));
         }
     }
 

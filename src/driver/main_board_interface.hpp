@@ -1,4 +1,5 @@
 #pragma once
+#include "USBAPI.h"
 #include "Wire.h"
 #include "shared/ground_command.hpp"
 #include "shared/system_state.hpp"
@@ -21,7 +22,7 @@ public:
         resume();
         _instance = this;
   
-        Serial.print("I2C initialized as slave on address ");
+        Serial.print(F("I2C initialized as slave on address "));
         Serial.println(_address, HEX);
     }
 
@@ -43,29 +44,31 @@ public:
 
     static void requestEvent() {
         if(_instance == nullptr) {
-            Serial.println("MainBoardInterface not initialized");
+            Serial.println(F("MainBoardInterface not initialized"));
             return;
         }
+        Serial.println("STATE -> MAIN");
         Wire.write((uint8_t*)&_instance->_state, sizeof(_instance->_state));
     }
 
     static void receiveEvent(int numBytes) {
         if(_instance == nullptr) {
-            Serial.println("MainBoardInterface not initialized");
+            Serial.println(F("MainBoardInterface not initialized"));
             return;
         }
 
         if(numBytes != sizeof(GroundCommand)){
-            Serial.println("Invalid message size");
+            Serial.println(F("Invalid message size"));
             while(Wire.available() > 0) // empty the buffer
                 Wire.read();
             return;
         }
+        
 
         GroundCommand new_command;
         auto num_read = Wire.readBytes((uint8_t*)&new_command, sizeof(new_command));
         if(num_read != sizeof(new_command)){
-            Serial.println("Error reading command");
+            Serial.println(F("Error reading command"));
             return;
         }
         _instance->_command = new_command;

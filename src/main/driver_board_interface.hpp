@@ -13,7 +13,7 @@ class DriverBoardInterface {
 
     bool init()
     {
-        Serial.println("Initializing I2C");
+        Serial.println(F("Initializing I2C"));
         Wire.begin();
         
         _initialized = true;
@@ -23,7 +23,7 @@ class DriverBoardInterface {
     void sendCommand(const GroundCommand &command)
     {
         if (!_initialized) {
-            Serial.println("[ERROR] [DriverBoardInterface]: I2C not initialized");
+            Serial.println(F("[ERROR] [DriverBoardInterface]: I2C not initialized"));
             return;
         }
 
@@ -35,16 +35,24 @@ class DriverBoardInterface {
     bool requestState(SystemState &state_out)
     {
         if (!_initialized) {
-            Serial.println("[ERROR] [DriverBoardInterface]: I2C not initialized");
+            Serial.println(F("[ERROR] [DriverBoardInterface]: I2C not initialized"));
             return false;
         }
 
-        Wire.requestFrom(_driver_board_i2c_address, sizeof(SystemState));
-        auto num_bytes = Wire.readBytes((uint8_t*)&state_out, sizeof(SystemState));
-        if (num_bytes != sizeof(SystemState)) {
-            Serial.println("[ERROR] [DriverBoardInterface]: Failed to read SystemState from I2C");
+        SystemState state;
+        auto num_bytes = Wire.requestFrom(_driver_board_i2c_address, sizeof(state));
+        if (num_bytes != sizeof(state)) {
+            Serial.print(F("[ERROR] [DriverBoardInterface]: Failed to request SystemState from I2C - bytes received "));
+            Serial.println(num_bytes);
             return false;
         }
+
+        num_bytes = Wire.readBytes((uint8_t*)&state, sizeof(state));
+        if (num_bytes != sizeof(state)) {
+            Serial.println(F("[ERROR] [DriverBoardInterface]: Failed to read SystemState from I2C"));
+            return false;
+        }
+        state_out = state;
         return true;
     }
 

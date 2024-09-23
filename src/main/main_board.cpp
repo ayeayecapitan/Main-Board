@@ -20,27 +20,31 @@ void setup() {
 
 GroundCommand command;
 
+uint64_t last_state_request = 0;
+
 void loop() {
     GroundStationInterface.processIncomingData();
 
     if(GroundStationInterface.commandAvailable(command.timestamp_us))
     {
         command = GroundStationInterface.latestCommand();
-
-        Serial.println("RECEIVED COMMAND FROM GROUND STATION");
-        Serial.println(command);
+        // Serial.println(command);
         driver_board_interface.sendCommand(command);
-        Serial.println("FORWARDED COMMAND TO DRIVER BOARD");
+        // Serial.println(F("GCS CMD -> DRIVER"));
     }
     
+    if(millis() - last_state_request < 2000)
+        return;
+    last_state_request = millis();
     SystemState state;
     if(driver_board_interface.requestState(state))
     {
-        Serial.println("RECEIVED STATE FROM DRIVER BOARD");
-        Serial.println(state);
+        Serial.println(state.devices);
         GroundStationInterface.sendState(state);
-        Serial.println("FORWARDED STATE TO GROUND STATION");
+        // Serial.println(F("STATE -> GCS"));
     }
+
+    // delay(1000);
 }
 
 //TODO:

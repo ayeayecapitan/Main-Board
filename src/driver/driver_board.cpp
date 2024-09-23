@@ -8,7 +8,9 @@
 #include "spe_probe.hpp"
 #include "chemical_probe.hpp"
 
-#include "communication/main_board_interface.hpp"
+#include "main_board_interface.hpp"
+
+#include <Wire.h>
 
 MainBoardInterface main_board_interface(driver_board::I2C_ADDRESS);
 
@@ -22,6 +24,7 @@ SpeProbe spe_probes[probe::COUNT] {
 };
 
 SystemState state;
+GroundCommand command;
 
 void setup()
 {
@@ -31,8 +34,6 @@ void setup()
     sensors.init();
     main_board_interface.init();
 }
-
-GroundCommand command;
 
 SpeProbe * getActiveProbe()
 {
@@ -80,7 +81,7 @@ void loop()
     if(main_board_interface.commandAvailable(command.timestamp_us))
     {
         command = main_board_interface.latestCommand();
-        Serial.println("RECEIVED COMMAND");
+        Serial.print("RECEIVED\t");
         Serial.println(command);
     }
 
@@ -94,7 +95,7 @@ void loop()
         auto active_probe_desired_state = command.probe_desired_state[active_probe->index()];
         if (active_probe_desired_state == probe::State::OFF)
         {
-            Serial.println("STOPPING ACTIVE PROBE " + String(active_probe->index()));
+            Serial.println("STOPPING ACTIVE PROBE " + String(active_probe->index() + 1));
             active_probe->stop();
         }
     }
@@ -105,12 +106,12 @@ void loop()
         SpeProbe * next_probe_to_start = getNextProbeToStart(&command);
         if (next_probe_to_start != nullptr)
         {
-            Serial.println("STARTING PROBE " + String(next_probe_to_start->index()));
+            Serial.println("STARTING PROBE " + String(next_probe_to_start->index() + 1));
             next_probe_to_start->start();
         }
     }
 
     // Enable I2C interrupts
     main_board_interface.resume();
-    delay(500);
+    delay(100);
 }

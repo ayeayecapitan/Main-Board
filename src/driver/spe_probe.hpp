@@ -38,14 +38,28 @@ class SpeProbe
 
         void start()
         {
-            _inlet.open();
-            _outlet.open();
+            if(_active)
+            {
+                Serial.println("[SpeProbe::start] Probe " + String(_probe_index + 1) + " is already active");
+                return;
+            }
+
+            if(!_inlet.open())
+                return;
+            if(!_outlet.open())
+                return;
             enablePump();
             _active = true;
         }
 
         void stop()
         {
+            if(!_active)
+            {
+                Serial.println("[SpeProbe::stop] Probe " + String(_probe_index + 1) + " is not active");
+                return;
+            }
+
             disablePump();
             _outlet.close();
             _inlet.close();

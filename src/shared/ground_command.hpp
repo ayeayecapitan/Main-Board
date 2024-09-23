@@ -9,11 +9,21 @@ struct GroundCommand
 
     operator String() const
     {
-        String str = "GCS Command\t[timestamp: " + toString(timestamp_us) + " us]\n";
-        str += "Probe states\t[";
+        String str = "GCS Command\ttimestamp: " + toString(timestamp_us) + " us, Probes: ";
         for (size_t i = 0; i < probe::COUNT; i++)
         {
-            str += (uint8_t)probe_desired_state[i];
+            switch (probe_desired_state[i])
+            {
+            case probe::State::ON:
+                str += "ON";
+                break;
+            case probe::State::OFF:
+                str += "OFF";
+                break;
+            default:
+                str += "UNS";
+                break;
+            }
             if (i < probe::COUNT - 1)
                 str += ", ";
         }

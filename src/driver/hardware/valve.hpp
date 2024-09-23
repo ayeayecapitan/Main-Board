@@ -3,16 +3,17 @@
 #include <Arduino.h>
 #include "shared/data.hpp"
 
-#define SIMULATION
+// #define SIMULATION
 
 class Valve
 {
     const driver_board::valve::Descriptor &_descriptor;
     bool _is_open = false;
+    uint8_t _index;
 
 public:
     Valve(uint8_t index)
-        : _descriptor(driver_board::valve::descriptor[index])
+        : _descriptor(driver_board::valve::descriptor[index]) , _index(index)
     {
         if(index < 0 || index >= valve::COUNT)
         {
@@ -31,7 +32,7 @@ public:
 
     void init()
     {
-        #if defined(SIMULATION)
+        #if not defined(SIMULATION)
         pinMode(_descriptor.motor_pin, OUTPUT);
         pinMode(_descriptor.open_endstop_pin, INPUT_PULLUP);
         pinMode(_descriptor.closed_endstop_pin, INPUT_PULLUP);
@@ -48,15 +49,15 @@ public:
 
     void disableMotor() { digitalWrite(_descriptor.motor_pin, LOW); }
 
-    bool openEndstopHigh() const { return digitalRead(_descriptor.open_endstop_pin) == HIGH; }
+    bool openEndstopOn() const { return digitalRead(_descriptor.open_endstop_pin) == LOW; }
 
-    bool closedEndstopHigh() const { return digitalRead(_descriptor.closed_endstop_pin) == HIGH; }
+    bool closedEndstopOn() const { return digitalRead(_descriptor.closed_endstop_pin) == LOW; }
 
 
     valve::state state()
     {
-        auto openEndstop = openEndstopHigh();
-        auto closedEndstop = closedEndstopHigh();
+        auto openEndstop = openEndstopOn();
+        auto closedEndstop = closedEndstopOn();
 
         if(!openEndstop && closedEndstop)
             return valve::state::CLOSED;
@@ -73,26 +74,27 @@ public:
         return valve::state::UNSET;
     }
 
-    void open()
+    bool open()
     {
         // motor direction is set for all valves so this method should be blocking to avoid conflicts
-        if(openEndstopHigh())
+        if(openEndstopOn())
         {
-            Serial.println("[Valve::open] Already open");
+            Serial.println("[Valve::open] Valve " + String(_index + 1) + " already open");
+            return false;
         }
 
         auto start_time = millis();
         setMotorsDirection(driver_board::valve::motor::Direction::OPENING);
         enableMotor();
 
-        #if defined(SIMULATION)
-        while(!openEndstopHigh())
+        #if not defined(SIMULATION)
+        while(!openEndstopOn())
         {
             if(millis() - start_time > driver_board::valve::OPEN_CLOSE_TIMEOUT_MS)
             {
-                Serial.println("[Valve::open] Valve open timeout - closing");
+                Serial.println("[Valve::open] Valve " + String(_index + 1) + " open timeout - closing");
                 close();
-                break;
+                return false;
             }
         }
         #else
@@ -102,28 +104,29 @@ public:
         #endif
 
         disableMotor();
+        return true;
     }
 
-    void close()
+    bool close()
     {
         // motor direction is set for all valves so this method should be blocking to avoid conflicts
-        if(closedEndstopHigh())
+        if(closedEndstopOn())
         {
-            Serial.println("[Valve::close] Already closed");
-            return;
+            Serial.println("[Valve::close] Valve " + String(_index + 1) + " already closed");
+            return false;
         }
 
         auto start_time = millis();
         setMotorsDirection(driver_board::valve::motor::Direction::CLOSING);
         enableMotor();
 
-        #if defined(SIMULATION)
-        while(!closedEndstopHigh())
+        #if not defined(SIMULATION)
+        while(!closedEndstopOn())
         {
             if(millis() - start_time > driver_board::valve::OPEN_CLOSE_TIMEOUT_MS)
             {
-                Serial.println("[Valve::close] Valve close timeout");
-                break;
+                Serial.println("[Valve::close] Valve " + String(_index + 1) + " close timeout");
+                return false;
             }
         }
         #else
@@ -133,6 +136,7 @@ public:
         #endif
 
         disableMotor();
+        return true;
     }
 
     static void setMotorsDirection(driver_board::valve::motor::Direction direction) 
