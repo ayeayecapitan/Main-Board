@@ -31,8 +31,8 @@ struct SystemState
 
     struct Devices {
         valve::state valve_state[valve::COUNT] = { valve::state::UNSET };
-        pump::State pump_state[pump::COUNT] = { pump::State::UNSET };
-
+        pump::State spe_pump_state = pump::State::UNSET;
+        pump::State chemical_pump_state = pump::State::UNSET;
         operator String() const;
     } devices;
 
@@ -75,14 +75,7 @@ SystemState::Devices::operator String() const
         if (i < valve::COUNT - 1)
             str += ", ";
     }
-    str += "]\nPUMPS\t\t[";
-    for (size_t i = 0; i < pump::COUNT; i++)
-    {
-        str += toString(pump_state[i]);
-        if (i < pump::COUNT - 1)
-            str += ", ";
-    }
-    str += "]";
+    str += "]\nSPE PUMP\t" + toString(spe_pump_state) + "\nCHEMICAL PUMP\t" + toString(chemical_pump_state);
     return str;
 }
 

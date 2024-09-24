@@ -5,14 +5,15 @@
 struct GroundCommand
 {
     uint64_t timestamp_us = 0;
-    probe::State probe_desired_state[probe::COUNT];
+    probe::State spe_probes_desired_states[probe::COUNT];
+    probe::State chemical_probe_desired_state;
 
     operator String() const
     {
         String str = "GCS Command\ttimestamp: " + toString(timestamp_us) + " us, Probes: ";
         for (size_t i = 0; i < probe::COUNT; i++)
         {
-            switch (probe_desired_state[i])
+            switch (spe_probes_desired_states[i])
             {
             case probe::State::ON:
                 str += "ON";

@@ -17,7 +17,6 @@ namespace valve
 
     namespace index
     {
-        constexpr int NONE = -1;
         constexpr int PROBE_1_INLET = 0;
         constexpr int PROBE_1_OUTLET = 1;
         constexpr int PROBE_2_INLET = 2;
@@ -27,6 +26,16 @@ namespace valve
         constexpr int PROBE_4_INLET = 6;
         constexpr int PROBE_4_OUTLET = 7;
     }
+}
+
+namespace pump
+{
+    enum class State : uint8_t
+    {
+        UNSET = 0,
+        OFF,
+        ON
+    };
 }
 
 namespace probe {
@@ -50,8 +59,6 @@ namespace probe {
     {
         uint8_t inlet_valve_index;
         uint8_t outlet_valve_index;
-
-        // TODO: auto mode params
     };
 
     constexpr Descriptor descriptor[COUNT] = {
@@ -63,24 +70,6 @@ namespace probe {
 }
 
 
-
-namespace pump
-{
-    constexpr uint8_t COUNT = 2;
-    
-    enum class State : uint8_t
-    {
-        UNSET = 0,
-        OFF,
-        ON
-    };
-
-    namespace index
-    {
-        constexpr uint8_t SPE_PROBES = 0;
-        constexpr uint8_t CHEMICAL_PROBES = 1;
-    }
-}
 namespace temperature {
     constexpr uint8_t COUNT = 8;
     namespace index
@@ -136,7 +125,6 @@ namespace driver_board{
         constexpr float MAX_RAW_VALUE = 0xFFFF; // PT100 temperature = (reading / MAX_RAW_VALUE) * REFERENCE_RESISTANCE
         constexpr float REFERENCE_RESISTANCE = 430.0; // PT100 temperature = (reading / MAX_RAW_VALUE) * REFERENCE_RESISTANCE
 
-
         namespace spi
         {
             constexpr uint8_t PT100_1 = 40;
@@ -157,11 +145,9 @@ namespace driver_board{
         }
     }
 
-
     namespace heater {
         constexpr uint8_t PIN = 38;
     }
-
 
     namespace valve {
         constexpr int OPEN_CLOSE_TIMEOUT_MS = 2000;

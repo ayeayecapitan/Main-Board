@@ -11,8 +11,8 @@ os.makedirs(os.path.dirname(path), exist_ok=True)
 env.Replace(COMPILATIONDB_PATH=path)
 
 
+# Add a delay after uploading firmware to wait for serial monitor port to be ready
 def after_upload(source, target, env):
-    time.sleep(1)  # delay for the port to be ready
+    time.sleep(1.5)
 
 env.AddPostAction("upload", after_upload)
-

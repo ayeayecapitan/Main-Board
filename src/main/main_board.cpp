@@ -7,50 +7,48 @@
 #include "shared/data.hpp"
 #include "shared/ground_command.hpp"
 
-DriverBoardInterface driver_board_interface(driver_board::I2C_ADDRESS); // NOLINT - global variable
+DriverBoardInterface driver_board_interface(driver_board::I2C_ADDRESS);
+GroundStationInterface ground_station_interface;
+
+GroundCommand command;
+uint64_t last_state_request = 0;
 
 void setup() {
-    delay(1000); // wait for the monitor serial port to be available
-
     Serial.begin(main_board::SERIAL_BAUD_RATE);
+    delay(1500); // Workaround for the serial monitor permissions issue - see after_upload in env.py
 
-    GroundStationInterface.init();
+    ground_station_interface.init();
     driver_board_interface.init();
 }
 
-GroundCommand command;
-
-uint64_t last_state_request = 0;
-
 void loop() {
-    GroundStationInterface.processIncomingData();
+    // Process incoming UDP data from the ground station
+    ground_station_interface.processIncomingData();
 
-    if(GroundStationInterface.commandAvailable(command.timestamp_us))
+    // If new command is available forward it to the driver board
+    if(ground_station_interface.commandAvailable(command.timestamp_us))
     {
-        command = GroundStationInterface.latestCommand();
-        // Serial.println(command);
+        command = ground_station_interface.latestCommand();
         driver_board_interface.sendCommand(command);
+        // Serial.println(command);
         // Serial.println(F("GCS CMD -> DRIVER"));
     }
     
-    if(millis() - last_state_request < 2000)
-        return;
-    last_state_request = millis();
-    SystemState state;
-    if(driver_board_interface.requestState(state))
+
+    // Do every STATE_REQUEST_INTERVAL_MS
+    constexpr uint64_t STATE_REQUEST_INTERVAL_MS = 1000;
+    if(millis() - last_state_request >= STATE_REQUEST_INTERVAL_MS)
     {
-        Serial.println(state.devices);
-        GroundStationInterface.sendState(state);
-        // Serial.println(F("STATE -> GCS"));
+        // Request the state from the driver board and forward it to the ground station
+        SystemState state;
+        if(driver_board_interface.requestState(state))
+        {
+            last_state_request = millis();
+            ground_station_interface.sendState(state);
+            Serial.println(state.devices);
+            // Serial.println(F("STATE -> GCS"));
+        }
     }
 
-    // delay(1000);
+    // TODO save state to SD card
 }
-
-//TODO:
-//1. Downlink
-//2. Uplink
-//4. Frame signatures
-//5. Telecommands
-//6. Files
-//8. Errr codes

@@ -74,6 +74,9 @@ public:
         return valve::state::UNSET;
     }
 
+    // Try to open the valve, if it fails, close it.
+    // Returns true if the valve has opened successfully.
+    // Blocks until the valve is open or timeout.
     bool open()
     {
         // motor direction is set for all valves so this method should be blocking to avoid conflicts
@@ -107,6 +110,8 @@ public:
         return true;
     }
 
+    // Try to close the valve.
+    // Returns true if the valve has closed successfully.
     bool close()
     {
         // motor direction is set for all valves so this method should be blocking to avoid conflicts

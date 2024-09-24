@@ -28,8 +28,8 @@ GroundCommand command;
 
 void setup()
 {
-    delay(1000); // wait for the monitor serial port to be available
     Serial.begin(driver_board::SERIAL_BAUD_RATE);
+    delay(1500); // Workaround for the serial monitor permissions issue - see after_upload in env.py
 
     sensors.init();
     main_board_interface.init();
@@ -49,7 +49,7 @@ SpeProbe * getNextProbeToStart(GroundCommand * command)
 {
     for (auto &probe : spe_probes)
     {
-        if (command->probe_desired_state[probe.index()] == probe::State::ON)
+        if (command->spe_probes_desired_states[probe.index()] == probe::State::ON)
             return &probe;
     }
     return nullptr;
@@ -68,8 +68,8 @@ void loop()
         probe.getValveStates(state.devices.valve_state);
 
     // Update pump states
-    state.devices.pump_state[pump::index::SPE_PROBES] = SpeProbe::pumpState();
-    state.devices.pump_state[pump::index::CHEMICAL_PROBES] = ChemicalProbe::pumpState();
+    state.devices.spe_pump_state = SpeProbe::pumpState();
+    state.devices.chemical_pump_state = ChemicalProbe::pumpState();
 
     // Disable I2C interrupts
     main_board_interface.pause();
@@ -92,7 +92,7 @@ void loop()
     if (active_probe != nullptr)
     {
         // Check if the command is to close the active probe
-        auto active_probe_desired_state = command.probe_desired_state[active_probe->index()];
+        auto active_probe_desired_state = command.spe_probes_desired_states[active_probe->index()];
         if (active_probe_desired_state == probe::State::OFF)
         {
             Serial.println("STOPPING ACTIVE PROBE " + String(active_probe->index() + 1));

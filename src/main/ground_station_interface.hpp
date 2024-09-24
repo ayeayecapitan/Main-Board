@@ -127,5 +127,3 @@ public:
     }
 
 };
-
-GroundStationInterface GroundStationInterface; // NOLINT - global variable
