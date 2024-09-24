@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include "shared/data.hpp"
 
-#include "hardware/valve.hpp"
+#include "valve.hpp"
 
 
 class SpeProbe
@@ -92,10 +92,10 @@ class SpeProbe
             return _active;
         }
 
-        void getValveStates(valve::state valve_state[valve::COUNT])
+        void getValveStates(valve::state valves_state[valve::COUNT])
         {
-            valve_state[_descriptor.inlet_valve_index] = _inlet.state();
-            valve_state[_descriptor.outlet_valve_index] = _outlet.state();
+            valves_state[_descriptor.inlet_valve_index] = _inlet.state();
+            valves_state[_descriptor.outlet_valve_index] = _outlet.state();
         }
 
         static pump::State pumpState()

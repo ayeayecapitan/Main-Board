@@ -30,7 +30,7 @@ struct SystemState
     } sensors;
 
     struct Devices {
-        valve::state valve_state[valve::COUNT] = { valve::state::UNSET };
+        valve::state valves_state[valve::COUNT] = { valve::state::UNSET };
         pump::State spe_pump_state = pump::State::UNSET;
         pump::State chemical_pump_state = pump::State::UNSET;
         operator String() const;
@@ -71,11 +71,11 @@ SystemState::Devices::operator String() const
     String str = "VALVES\t\t[";
     for (size_t i = 0; i < valve::COUNT; i++)
     {
-        str += toString(valve_state[i]);
+        str += toString(valves_state[i]);
         if (i < valve::COUNT - 1)
             str += ", ";
     }
-    str += "]\nSPE PUMP\t" + toString(spe_pump_state) + "\nCHEMICAL PUMP\t" + toString(chemical_pump_state);
+    str += "] SPE PUMP\t" + toString(spe_pump_state) + " CHEMICAL PUMP\t" + toString(chemical_pump_state);
     return str;
 }
 

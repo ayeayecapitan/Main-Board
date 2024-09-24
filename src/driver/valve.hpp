@@ -3,13 +3,19 @@
 #include <Arduino.h>
 #include "shared/data.hpp"
 
-// #define SIMULATION
+#define SIMULATION
 
 class Valve
 {
     const driver_board::valve::Descriptor &_descriptor;
     bool _is_open = false;
     uint8_t _index;
+
+    #if defined(SIMULATION)
+    int _simulation_open_endstop = HIGH;
+    int _simulation_closed_endstop = LOW;
+    #endif
+
 
 public:
     Valve(uint8_t index)
@@ -40,6 +46,8 @@ public:
         pinMode(_descriptor.motor_pin, OUTPUT);
         pinMode(_descriptor.open_endstop_pin, OUTPUT);
         pinMode(_descriptor.closed_endstop_pin, OUTPUT);
+        digitalWrite(_descriptor.open_endstop_pin, HIGH);
+        digitalWrite(_descriptor.closed_endstop_pin, LOW);
         #endif
     }
 
@@ -49,15 +57,31 @@ public:
 
     void disableMotor() { digitalWrite(_descriptor.motor_pin, LOW); }
 
-    bool openEndstopOn() const { return digitalRead(_descriptor.open_endstop_pin) == LOW; }
+    bool openEndstopOn() const
+    {
+        #if defined(SIMULATION)
+        return _simulation_open_endstop == LOW;
+        #endif
+        
+        return digitalRead(_descriptor.open_endstop_pin) == LOW;
+    }
 
-    bool closedEndstopOn() const { return digitalRead(_descriptor.closed_endstop_pin) == LOW; }
+    bool closedEndstopOn() const {
+
+        #if defined(SIMULATION)
+        return _simulation_closed_endstop == LOW;
+        #endif
+
+        return digitalRead(_descriptor.closed_endstop_pin) == LOW;
+    }
 
 
     valve::state state()
     {
         auto openEndstop = openEndstopOn();
         auto closedEndstop = closedEndstopOn();
+
+        Serial.println("[Valve::state] Valve " + String(_index + 1) + " openEndstop: " + String(openEndstop) + " closedEndstop: " + String(closedEndstop));
 
         if(!openEndstop && closedEndstop)
             return valve::state::CLOSED;
@@ -102,9 +126,9 @@ public:
             }
         }
         #else
-        digitalWrite(_descriptor.closed_endstop_pin, LOW);
+        _simulation_closed_endstop = HIGH;
         delay(1000);
-        digitalWrite(_descriptor.open_endstop_pin, HIGH);
+        _simulation_open_endstop = LOW;
         #endif
 
         disableMotor();
@@ -136,9 +160,9 @@ public:
             }
         }
         #else
-        digitalWrite(_descriptor.open_endstop_pin, LOW);
+        _simulation_open_endstop = HIGH;
         delay(1000);
-        digitalWrite(_descriptor.closed_endstop_pin, HIGH);
+        _simulation_closed_endstop = LOW;
         #endif
 
         disableMotor();

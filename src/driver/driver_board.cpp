@@ -37,8 +37,7 @@ void enableWatchdog()
 
 void setup()
 {
-    enableWatchdog();
-    //wdt_reset();
+    // enableWatchdog(); TODO Enable watchdog
     Serial.begin(driver_board::SERIAL_BAUD_RATE);
     delay(1500); // Workaround for the serial monitor permissions issue - see after_upload in env.py
 
@@ -46,6 +45,7 @@ void setup()
 
     sensors.init();
     main_board_interface.init();
+    ChemicalProbe::init();
 }
 
 SpeProbe * getActiveProbe()
@@ -79,7 +79,7 @@ void loop()
 
     // Update valve states
     for (auto &probe : spe_probes)
-        probe.getValveStates(state.devices.valve_state);
+        probe.getValveStates(state.devices.valves_state);
 
     // Update pump states
     state.devices.spe_pump_state = SpeProbe::pumpState();
@@ -123,6 +123,19 @@ void loop()
             Serial.println("STARTING PROBE " + String(next_probe_to_start->index() + 1));
             next_probe_to_start->start();
         }
+    }
+
+    // Handle chemical probe
+    if (command.chemical_probe_desired_state == probe::State::ON && ChemicalProbe::pumpState() != pump::State::ON)
+    {
+        Serial.println("STARTING CHEMICAL PROBE");
+        ChemicalProbe::start();
+    }
+
+    if (command.chemical_probe_desired_state == probe::State::OFF && ChemicalProbe::pumpState() != pump::State::OFF)
+    {
+        Serial.println("STOPPING CHEMICAL PROBE");
+        ChemicalProbe::stop();
     }
 
     // Enable I2C interrupts

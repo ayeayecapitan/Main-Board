@@ -189,8 +189,8 @@ namespace driver_board{
     {
         namespace pin
         {
-            constexpr uint8_t SPE_PROBES = 39;
-            constexpr uint8_t CHEM_PROBES = 40;
+            constexpr uint8_t SPE_PROBES = 42;
+            constexpr uint8_t CHEM_PROBES = 49;
         }
     }
 

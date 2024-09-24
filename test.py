@@ -9,6 +9,8 @@ from enum import Enum
 from typing import Callable, List
 import numpy
 
+from pprint import pprint
+
 
 # file://./src/shared/data.hpp
 class ProbeState(Enum):
@@ -66,7 +68,7 @@ class SystemState:
     
     @dataclass
     class Devices:
-        valve_state: List[ValveState] = field(default_factory=lambda: [ValveState.UNSET] * 4)
+        valves_state: List[ValveState] = field(default_factory=lambda: [ValveState.UNSET] * 4)
         pump_state: List[PumpState] = field(default_factory=lambda: [PumpState.UNSET] * 4)
     devices : Devices = field(default_factory=Devices)
 
@@ -75,6 +77,8 @@ class SystemState:
         state = SystemState()
         
         unpacked = struct.unpack('<Q8f1f3f1B3f8B2B', data)
+        pprint(unpacked)
+        
         state.timestamp_us = unpacked[0]
         state.sensors.temperatures_c = unpacked[1:9]
         state.sensors.pressure_pa = unpacked[9]
@@ -88,8 +92,8 @@ class SystemState:
         state.sensors.power_supply.current = unpacked[15]
         state.sensors.power_supply.power = unpacked[16]
         
-        state.devices.valve_state = [ValveState(v) for v in unpacked[17:21]]
-        state.devices.pump_state = [PumpState(p) for p in unpacked[21:25]]
+        state.devices.valves_state = [ValveState(v) for v in unpacked[17:25]]
+        state.devices.pump_state = [PumpState(p) for p in unpacked[25:29]]
         
         return state
 
@@ -153,7 +157,7 @@ class MainBoardInterface:
     
 
 def main():
-    main_board_interface = MainBoardInterface(lambda state: print(state))
+    main_board_interface = MainBoardInterface(lambda state: print(""))
     main_board_interface.start()
     command = Command()
 

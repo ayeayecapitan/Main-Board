@@ -47,8 +47,8 @@ public:
             Serial.println(F("MainBoardInterface not initialized"));
             return;
         }
-        Serial.println("STATE -> MAIN");
         Wire.write((uint8_t*)&_instance->_state, sizeof(_instance->_state));
+        Serial.println("STATE -> MAIN");
     }
 
     static void receiveEvent(int numBytes) {
