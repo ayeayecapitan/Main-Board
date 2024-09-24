@@ -96,8 +96,8 @@ class SystemState:
 
 class MainBoardInterface:    
     def __init__(self, on_new_state_callback: Callable[[SystemState], None]):
-        self.__gcs_addr = ("10.0.0.100", 2000)
-        self.__main_board_addr = ("10.0.0.181", 1000)
+        self.__gcs_addr = ("172.16.18.182", 2000)
+        self.__main_board_addr = ("172.16.18.181", 1000)
 
         self.__sock = None
         

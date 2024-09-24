@@ -7,13 +7,25 @@
 #include "shared/data.hpp"
 #include "shared/ground_command.hpp"
 
+#include <avr/wdt.h>
+
+#include <EEPROM.h>
+
 DriverBoardInterface driver_board_interface(driver_board::I2C_ADDRESS);
 GroundStationInterface ground_station_interface;
 
 GroundCommand command;
 uint64_t last_state_request = 0;
 
+void enableWatchdog()
+{
+    delay(5000);
+    wdt_enable(WDTO_8S);
+    wdt_reset();
+}
+
 void setup() {
+    enableWatchdog();
     Serial.begin(main_board::SERIAL_BAUD_RATE);
     delay(1500); // Workaround for the serial monitor permissions issue - see after_upload in env.py
 
@@ -22,6 +34,7 @@ void setup() {
 }
 
 void loop() {
+    wdt_reset();
     // Process incoming UDP data from the ground station
     ground_station_interface.processIncomingData();
 

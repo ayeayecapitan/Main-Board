@@ -31,9 +31,25 @@ class SpeProbe
         void init()
         {
             pinMode(driver_board::pump::pin::SPE_PROBES, OUTPUT);
-
             _inlet.init();
             _outlet.init();
+
+            //Check if state needs to be restored after reboot
+            auto inlet_state = _inlet.state();
+            auto outlet_state = _outlet.state();
+
+            if(inlet_state == valve::state::OPEN && outlet_state == valve::state::OPEN)
+            {
+                Serial.println("[SpeProbe::init] Probe " + String(_probe_index + 1) + " was active before reboot");
+                start();
+            }
+
+            //If one of the valves is open then close the valve, not sure if this is necessary
+            if((inlet_state == valve::state::OPEN) != (outlet_state == valve::state::OPEN))
+            {
+                Serial.println("[SpeProbe::init] Probe " + String(_probe_index + 1) + " has an inconsistent state");
+                stop();
+            }
         }
 
         void start()
@@ -88,6 +104,7 @@ class SpeProbe
                 return pump::State::ON;
             return pump::State::OFF;
         }
+
     private:
         static void enablePump()
         {

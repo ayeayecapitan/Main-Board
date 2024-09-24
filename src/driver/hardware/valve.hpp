@@ -74,6 +74,7 @@ public:
         return valve::state::UNSET;
     }
 
+
     // Try to open the valve, if it fails, close it.
     // Returns true if the valve has opened successfully.
     // Blocks until the valve is open or timeout.
@@ -83,7 +84,7 @@ public:
         if(openEndstopOn())
         {
             Serial.println("[Valve::open] Valve " + String(_index + 1) + " already open");
-            return false;
+            return true;
         }
 
         auto start_time = millis();

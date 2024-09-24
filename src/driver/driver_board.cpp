@@ -12,6 +12,8 @@
 
 #include <Wire.h>
 
+#include <avr/wdt.h>
+
 MainBoardInterface main_board_interface(driver_board::I2C_ADDRESS);
 
 SensorsController sensors;
@@ -26,10 +28,21 @@ SpeProbe spe_probes[probe::COUNT] {
 SystemState state;
 GroundCommand command;
 
+void enableWatchdog()
+{
+    delay(5000);
+    wdt_enable(WDTO_8S);
+    wdt_reset();
+}
+
 void setup()
 {
+    enableWatchdog();
+    //wdt_reset();
     Serial.begin(driver_board::SERIAL_BAUD_RATE);
     delay(1500); // Workaround for the serial monitor permissions issue - see after_upload in env.py
+
+    Serial.println("STARTING DRIVER BOARD");
 
     sensors.init();
     main_board_interface.init();
@@ -57,6 +70,7 @@ SpeProbe * getNextProbeToStart(GroundCommand * command)
 
 void loop()
 {
+    //wdt_reset();
     // Update timestamp
     state.timestamp_us = micros();
 

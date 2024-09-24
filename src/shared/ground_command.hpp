@@ -28,6 +28,6 @@ struct GroundCommand
             if (i < probe::COUNT - 1)
                 str += ", ";
         }
-        return str + "]";
+        return str + "]" 
     }
 };
