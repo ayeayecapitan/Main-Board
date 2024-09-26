@@ -76,9 +76,10 @@ class SystemState:
     def unpack(data) -> 'SystemState':
         state = SystemState()
         
-        unpacked = struct.unpack('<Q8f1f3f1B3f8B2B', data)
-        pprint(unpacked)
-        
+        unpacked = struct.unpack('<hQ8f1f3f1B3f8B2Bh', data)
+        # remove first and last - signature is checked in the main board, UDP handles checksums
+        unpacked = unpacked[1:-1]
+
         state.timestamp_us = unpacked[0]
         state.sensors.temperatures_c = unpacked[1:9]
         state.sensors.pressure_pa = unpacked[9]
@@ -100,6 +101,8 @@ class SystemState:
 
 class MainBoardInterface:    
     def __init__(self, on_new_state_callback: Callable[[SystemState], None]):
+        self.STATE_SIZE = 83
+
         self.__gcs_addr = ("172.16.18.182", 2000)
         self.__main_board_addr = ("172.16.18.181", 1000)
 
@@ -147,7 +150,7 @@ class MainBoardInterface:
     def __receive_state(self):
         while not self.__should_stop:
             try:
-                data, _ = self.__sock.recvfrom(79)
+                data, _ = self.__sock.recvfrom(self.STATE_SIZE)
                 state = SystemState.unpack(data)
                 self.__on_new_state_callback(state)
             except timeout:
@@ -157,7 +160,7 @@ class MainBoardInterface:
     
 
 def main():
-    main_board_interface = MainBoardInterface(lambda state: print(""))
+    main_board_interface = MainBoardInterface(lambda state: pprint(state))
     main_board_interface.start()
     command = Command()
 
@@ -177,10 +180,14 @@ def main():
     keyboard.on_press_key('4', lambda _: toggle_spe(3))
     keyboard.on_press_key('c', lambda _: toggle_chemical_probe())
 
-    keyboard.wait('q')
-    print("done")
-    keyboard.unhook_all()
-    main_board_interface.stop()
+    try:
+        keyboard.wait('q')
+    except KeyboardInterrupt:
+        pass
+    finally:
+        print("done")
+        keyboard.unhook_all()
+        main_board_interface.stop()
     
 if __name__ == "__main__":
     main()

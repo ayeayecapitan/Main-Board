@@ -2,10 +2,10 @@
 
 #include <Adafruit_INA260.h>
 #include <Adafruit_MAX31865.h>
+#include <SparkFun_u-blox_GNSS_Arduino_Library.h>
 
 #include "hardware/ds18b20.hpp"
 #include "hardware/honeywell.hpp"
-// #include "hardware/gps.hpp"
 
 #include "shared/data.hpp"
 #include "shared/system_state.hpp"
@@ -19,7 +19,8 @@ class SensorsController
     Adafruit_MAX31865 _pt100_1 {driver_board::pt100::spi::PT100_1};
     Adafruit_MAX31865 _pt100_2 {driver_board::pt100::spi::PT100_2};
 
-    // GPS _gps;
+    SFE_UBLOX_GNSS _gps;
+
     public:
         SensorsController() = default;
 
@@ -31,7 +32,8 @@ class SensorsController
             _pt100_1.begin();
             _pt100_2.begin();
 
-            // _gps.init();
+            _gps.begin();
+
         }
 
         SystemState::SensorsData read()
@@ -53,11 +55,12 @@ class SensorsController
             // Pressure
             data.pressure_pa = _honeywell_sensor.readPressurePa();
 
-            // Gps
-            // data.gps.altitude = _gps.readAltitude();
-            // data.gps.latitude = _gps.readLatitude();
-            // data.gps.longitude = _gps.readLongitude();
-            // data.gps.satellites = _gps.readSatellites();
+            // Read gps new data
+            
+            data.gps.altitude = (_gps.getAltitude())/1000; //Convert from milimeters to meters
+            data.gps.latitude = float(_gps.getLatitude())/10e7f; // Convert to float degrees
+            data.gps.longitude = float(_gps.getLongitude())/10e7f; // Convert to float degrees
+            data.gps.satellites = _gps.getSIV();
 
             // Power supply
             data.power_supply.voltage = _ina260.readBusVoltage();
@@ -77,7 +80,6 @@ class SensorsController
         {
             _ds18b20_sensors.update();
             _honeywell_sensor.update();
-            // _gps.update();
         }
 
 };

@@ -81,8 +81,6 @@ public:
         auto openEndstop = openEndstopOn();
         auto closedEndstop = closedEndstopOn();
 
-        Serial.println("[Valve::state] Valve " + String(_index + 1) + " openEndstop: " + String(openEndstop) + " closedEndstop: " + String(closedEndstop));
-
         if(!openEndstop && closedEndstop)
             return valve::state::CLOSED;
 

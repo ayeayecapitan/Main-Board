@@ -119,6 +119,12 @@ namespace driver_board{
         }
     }
 
+    namespace rtc {
+        namespace i2c {
+            constexpr uint8_t ADDRESS = 0x42;
+        }
+    }
+
     namespace pt100 {
         constexpr uint8_t COUNT = 2;
 
@@ -198,6 +204,7 @@ namespace driver_board{
 
 namespace main_board{
     constexpr uint32_t SERIAL_BAUD_RATE = 9600;
+    constexpr uint8_t EEEPRM_ADDRESS = 0;
 }
 
 

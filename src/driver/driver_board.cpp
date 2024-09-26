@@ -14,7 +14,9 @@
 
 #include <avr/wdt.h>
 
-MainBoardInterface main_board_interface(driver_board::I2C_ADDRESS);
+#include <RTClib.h>
+
+MainBoardInterface main_board_interface;
 
 SensorsController sensors;
 
@@ -27,6 +29,8 @@ SpeProbe spe_probes[probe::COUNT] {
 
 SystemState state;
 GroundCommand command;
+
+RTC_DS3231 rtc;
 
 void enableWatchdog()
 {
@@ -42,6 +46,8 @@ void setup()
     delay(1500); // Workaround for the serial monitor permissions issue - see after_upload in env.py
 
     Serial.println("STARTING DRIVER BOARD");
+
+    rtc.begin();
 
     sensors.init();
     main_board_interface.init();
@@ -72,10 +78,13 @@ void loop()
 {
     //wdt_reset();
     // Update timestamp
-    state.timestamp_us = micros();
+    state.timestamp_us = rtc.now().unixtime();
 
     // Update sensors
     state.sensors = sensors.read();
+
+    // Print sensors data
+    Serial.println(state);
 
     // Update valve states
     for (auto &probe : spe_probes)

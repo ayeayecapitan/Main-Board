@@ -3,6 +3,9 @@
 
 struct SystemState
 {
+    static constexpr uint16_t SIGNATURE = (uint16_t('M') << 8) + 'S';
+    uint16_t begin_signature = SIGNATURE;
+
     uint64_t timestamp_us = 0;
 
     struct SensorsData {
@@ -36,8 +39,14 @@ struct SystemState
         operator String() const;
     } devices;
 
+    uint16_t end_signature = SIGNATURE;
     // to String cast
     operator String() const;
+
+    bool signatureValid()
+    {
+        return begin_signature == SIGNATURE && end_signature == SIGNATURE;
+    }
 };
 
 SystemState::SensorsData::Gps::operator String() const
