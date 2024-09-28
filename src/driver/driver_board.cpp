@@ -11,6 +11,8 @@
 #include "sensors_controller.hpp"
 #include "spe_probe.hpp"
 #include "chemical_probe.hpp"
+#include "shared/debug.hpp"
+
 
 MainBoardInterface main_board_interface;
 
@@ -39,6 +41,7 @@ void setup()
 {
     // enableWatchdog(); TODO Enable watchdog
     Serial.begin(driver_board::SERIAL_BAUD_RATE);
+    while (!Serial); // Wait for serial port to connect.
     delay(1500); // Workaround for the serial monitor permissions issue - see after_upload in env.py
 
     DEBUG_PRINTLN("STARTING DRIVER BOARD");

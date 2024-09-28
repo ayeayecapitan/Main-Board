@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include "shared/data.hpp"
+#include "shared/debug.hpp"
 
 #include "valve.hpp"
 

@@ -3,6 +3,7 @@
 
 #include "shared/ground_command.hpp"
 #include "shared/system_state.hpp"
+#include "shared/debug.hpp"
 
 #include "hardware/sd_controller.hpp"
 

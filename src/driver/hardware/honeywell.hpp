@@ -1,6 +1,8 @@
 #include "shared/data.hpp"
 #include <Wire.h>
 #include <Arduino.h>
+#include "shared/debug.hpp"
+
 
 class HoneywellSensor
 {

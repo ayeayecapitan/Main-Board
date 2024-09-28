@@ -9,6 +9,7 @@
 
 #include "shared/data.hpp"
 #include "shared/system_state.hpp"
+#include "shared/debug.hpp"
 
 class SensorsController
 {

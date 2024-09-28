@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include <Ethernet.h>
 
+#include "shared/debug.hpp"
+
+#include "USBAPI.h"
 #include "driver_board_interface.hpp"
 #include "ground_station_interface.hpp"
 
@@ -11,6 +14,7 @@
 #include "hardware/eeprom_controller.hpp"
 
 #include <avr/wdt.h>
+
 
 
 DriverBoardInterface driver_board_interface(driver_board::I2C_ADDRESS);
@@ -32,6 +36,8 @@ void enableWatchdog()
 void setup() {
     // enableWatchdog(); TODO Enable watchdog
     Serial.begin(main_board::SERIAL_BAUD_RATE);
+    while (!Serial);
+
     delay(1500); // Workaround for the serial monitor permissions issue - see after_upload in env.py
 
     eeprom.begin();
@@ -41,7 +47,7 @@ void setup() {
 }
 
 void loop() {
-    wdt_reset();
+    //wdt_reset();
     // Process incoming UDP data from the ground station
     ground_station_interface.processIncomingData();
 
