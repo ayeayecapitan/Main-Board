@@ -50,8 +50,8 @@ void loop() {
     {
         command = ground_station_interface.latestCommand();
         driver_board_interface.sendCommand(command);
-        // Serial.println(command);
-        // Serial.println(F("GCS CMD -> DRIVER"));
+        // DEBUG_PRINTLN(command);
+        // DEBUG_PRINTLN(F("GCS CMD -> DRIVER"));
     }
     
 
@@ -66,8 +66,8 @@ void loop() {
         {
             last_successful_state_request = millis();
             ground_station_interface.sendState(state);
-            Serial.println(state.devices);
-            Serial.println(F("STATE -> GCS"));
+            DEBUG_PRINTLN(state.devices);
+            DEBUG_PRINTLN(F("STATE -> GCS"));
 
             // //print state as hex to serial
             // auto *state_bytes = (uint8_t *)&state;
@@ -77,11 +77,11 @@ void loop() {
             //     // print leading zero if needed
             //     if (state_bytes[i] < 0x10)
             //     {
-            //         Serial.print("0");
+            //         DEBUG_PRINT("0");
             //     }
-            //     Serial.print(state_bytes[i], HEX);
+            //     DEBUG_PRINT(state_bytes[i], HEX);
             // }
-            // Serial.println();
+            // DEBUG_PRINTLN();
         }
     }
 

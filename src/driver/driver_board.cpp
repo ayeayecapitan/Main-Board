@@ -1,20 +1,16 @@
 #include <Arduino.h>
+#include <Wire.h>
+#include <avr/wdt.h>
+#include <RTClib.h>
+
 #include "shared/data.hpp"
 #include "shared/ground_command.hpp"
 #include "shared/system_state.hpp"
 
+#include "main_board_interface.hpp"
 #include "sensors_controller.hpp"
-
 #include "spe_probe.hpp"
 #include "chemical_probe.hpp"
-
-#include "main_board_interface.hpp"
-
-#include <Wire.h>
-
-#include <avr/wdt.h>
-
-#include <RTClib.h>
 
 MainBoardInterface main_board_interface;
 
@@ -45,7 +41,7 @@ void setup()
     Serial.begin(driver_board::SERIAL_BAUD_RATE);
     delay(1500); // Workaround for the serial monitor permissions issue - see after_upload in env.py
 
-    Serial.println("STARTING DRIVER BOARD");
+    DEBUG_PRINTLN("STARTING DRIVER BOARD");
 
     rtc.begin();
 
@@ -84,7 +80,7 @@ void loop()
     state.sensors = sensors.read();
 
     // Print sensors data
-    Serial.println(state);
+    DEBUG_PRINTLN(state);
 
     // Update valve states
     for (auto &probe : spe_probes)
@@ -104,8 +100,8 @@ void loop()
     if(main_board_interface.commandAvailable(command.timestamp_us))
     {
         command = main_board_interface.latestCommand();
-        Serial.print("RECEIVED\t");
-        Serial.println(command);
+        DEBUG_PRINT("RECEIVED\t");
+        DEBUG_PRINTLN(command);
     }
 
     // Check if any probe is ON
@@ -118,7 +114,7 @@ void loop()
         auto active_probe_desired_state = command.spe_probes_desired_states[active_probe->index()];
         if (active_probe_desired_state == probe::State::OFF)
         {
-            Serial.println("STOPPING ACTIVE PROBE " + String(active_probe->index() + 1));
+            DEBUG_PRINTLN("STOPPING ACTIVE PROBE " + String(active_probe->index() + 1));
             active_probe->stop();
         }
     }
@@ -129,7 +125,7 @@ void loop()
         SpeProbe * next_probe_to_start = getNextProbeToStart(&command);
         if (next_probe_to_start != nullptr)
         {
-            Serial.println("STARTING PROBE " + String(next_probe_to_start->index() + 1));
+            DEBUG_PRINTLN("STARTING PROBE " + String(next_probe_to_start->index() + 1));
             next_probe_to_start->start();
         }
     }
@@ -137,13 +133,13 @@ void loop()
     // Handle chemical probe
     if (command.chemical_probe_desired_state == probe::State::ON && ChemicalProbe::pumpState() != pump::State::ON)
     {
-        Serial.println("STARTING CHEMICAL PROBE");
+        DEBUG_PRINTLN("STARTING CHEMICAL PROBE");
         ChemicalProbe::start();
     }
 
     if (command.chemical_probe_desired_state == probe::State::OFF && ChemicalProbe::pumpState() != pump::State::OFF)
     {
-        Serial.println("STOPPING CHEMICAL PROBE");
+        DEBUG_PRINTLN("STOPPING CHEMICAL PROBE");
         ChemicalProbe::stop();
     }
 

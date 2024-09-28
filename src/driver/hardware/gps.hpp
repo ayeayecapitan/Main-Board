@@ -17,12 +17,12 @@
 //             Wire.begin();
 //             if(myGNSS.begin()==false)
 //             {
-//                 Serial.println(F("Ublox GPS not detected at default I2C address. Please check wiring. Freezing."));
+//                 DEBUG_PRINTLN(F("Ublox GPS not detected at default I2C address. Please check wiring. Freezing."));
 //                 while(1);
 //             }
 //             else
 //             {
-//                 Serial.println(F("Ublox GPS detected at default I2C address."));
+//                 DEBUG_PRINTLN(F("Ublox GPS detected at default I2C address."));
 //             }
 //         }
         
@@ -49,7 +49,7 @@
 //         //         }
 //         //     }
 //         //     else {
-//         //         Serial.println("GPS not connected");
+//         //         DEBUG_PRINTLN("GPS not connected");
 //         //     }
 //         // }
 

@@ -41,7 +41,7 @@ class HoneywellSensor
         auto num_read = Wire.readBytes(raw_bytes, RAW_DATA_SIZE);
         if (num_read != RAW_DATA_SIZE)
         {
-            Serial.println("Error reading from Honeywell sensor");
+            DEBUG_PRINTLN("Error reading from Honeywell sensor");
         }
 
         struct {
@@ -61,20 +61,20 @@ class HoneywellSensor
 
         if(raw.status != STATUS_OK)
         {
-            Serial.println("Honewell error status: ");
+            DEBUG_PRINTLN("Honewell error status: ");
             switch (raw.status)
             {
                 case STATUS_COMMAND:
-                    Serial.println("Command");
+                    DEBUG_PRINTLN("Command");
                     break;
                 case STATUS_STALE:
-                    Serial.println("Stale");
+                    DEBUG_PRINTLN("Stale");
                     break;
                 case STATUS_DIAGNOSTIC_FAULT:
-                    Serial.println("Diagnostic fault");
+                    DEBUG_PRINTLN("Diagnostic fault");
                     break;
                 default:
-                    Serial.println("Unknown");
+                    DEBUG_PRINTLN("Unknown");
                     break;
             }
             pressure_pa = NAN;

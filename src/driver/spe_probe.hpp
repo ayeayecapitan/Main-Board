@@ -40,14 +40,14 @@ class SpeProbe
 
             if(inlet_state == valve::state::OPEN && outlet_state == valve::state::OPEN)
             {
-                Serial.println("[SpeProbe::init] Probe " + String(_probe_index + 1) + " was active before reboot");
+                DEBUG_PRINTLN("[SpeProbe::init] Probe " + String(_probe_index + 1) + " was active before reboot");
                 start();
             }
 
             //If one of the valves is open then close the valve, not sure if this is necessary
             if((inlet_state == valve::state::OPEN) != (outlet_state == valve::state::OPEN))
             {
-                Serial.println("[SpeProbe::init] Probe " + String(_probe_index + 1) + " has an inconsistent state");
+                DEBUG_PRINTLN("[SpeProbe::init] Probe " + String(_probe_index + 1) + " has an inconsistent state");
                 stop();
             }
         }
@@ -56,7 +56,7 @@ class SpeProbe
         {
             if(_active)
             {
-                Serial.println("[SpeProbe::start] Probe " + String(_probe_index + 1) + " is already active");
+                DEBUG_PRINTLN("[SpeProbe::start] Probe " + String(_probe_index + 1) + " is already active");
                 return;
             }
 
@@ -72,7 +72,7 @@ class SpeProbe
         {
             if(!_active)
             {
-                Serial.println("[SpeProbe::stop] Probe " + String(_probe_index + 1) + " is not active");
+                DEBUG_PRINTLN("[SpeProbe::stop] Probe " + String(_probe_index + 1) + " is not active");
                 return;
             }
 

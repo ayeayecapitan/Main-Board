@@ -1,10 +1,8 @@
 #pragma once
-#include "USBAPI.h"
 #include "Wire.h"
+
 #include "shared/ground_command.hpp"
 #include "shared/system_state.hpp"
-
-#include "hardware/sd_controller.hpp"
 
 #include "hardware/sd_controller.hpp"
 
@@ -18,7 +16,7 @@ class DriverBoardInterface {
 
     bool init()
     {
-        Serial.println(F("Initializing I2C"));
+        DEBUG_PRINTLN(F("Initializing I2C"));
         Wire.begin();
         
         _initialized = true;
@@ -28,7 +26,7 @@ class DriverBoardInterface {
     void sendCommand(const GroundCommand &command)
     {
         if (!_initialized) {
-            Serial.println(F("[ERROR] [DriverBoardInterface]: I2C not initialized"));
+            DEBUG_PRINTLN(F("[ERROR] [DriverBoardInterface]: I2C not initialized"));
             return;
         }
 
@@ -40,7 +38,7 @@ class DriverBoardInterface {
     bool requestState(SystemState &state_out)
     {
         if (!_initialized) {
-            Serial.println(F("[ERROR] [DriverBoardInterface]: I2C not initialized"));
+            DEBUG_PRINTLN(F("[ERROR] [DriverBoardInterface]: I2C not initialized"));
             return false;
         }
 
@@ -49,27 +47,27 @@ class DriverBoardInterface {
 
         if (num_bytes == 0)
         {
-            Serial.println(F("[ERROR] [DriverBoardInterface::requestState] - Driver board busy or unavailable"));
+            DEBUG_PRINTLN(F("[ERROR] [DriverBoardInterface::requestState] - Driver board busy or unavailable"));
             return false;
         }
 
         if (num_bytes != sizeof(state)) {
-            Serial.print(F("[ERROR] [DriverBoardInterface::requestState]: Expected "));
-            Serial.print(sizeof(state));
-            Serial.print(" bytes got ");
-            Serial.println(num_bytes);
+            DEBUG_PRINT(F("[ERROR] [DriverBoardInterface::requestState]: Expected "));
+            DEBUG_PRINT(sizeof(state));
+            DEBUG_PRINT(" bytes got ");
+            DEBUG_PRINTLN(num_bytes);
             return false;
         }
 
         num_bytes = Wire.readBytes((uint8_t*)&state, sizeof(state));
         if (num_bytes != sizeof(state)) {
-            Serial.println(F("[ERROR] [DriverBoardInterface::requestState]: Failed to read SystemState from I2C"));
+            DEBUG_PRINTLN(F("[ERROR] [DriverBoardInterface::requestState]: Failed to read SystemState from I2C"));
             return false;
         }
 
         // Check if the received state is valid
         if (!state.signatureValid()) {
-            Serial.println(F("[ERROR] [DriverBoardInterface::requestState]: Data corrupted"));
+            DEBUG_PRINTLN(F("[ERROR] [DriverBoardInterface::requestState]: Data corrupted"));
             return false;
         }
 

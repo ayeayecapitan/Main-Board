@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include "shared/data.hpp"
+#include "shared/debug.hpp"
 
 #define SIMULATION
 
@@ -23,7 +24,7 @@ public:
     {
         if(index < 0 || index >= valve::COUNT)
         {
-            Serial.println("[Valve::Valve] Invalid index");
+            DEBUG_PRINTLN("[Valve::Valve] Invalid index");
             return;
         }
     }
@@ -105,7 +106,7 @@ public:
         // motor direction is set for all valves so this method should be blocking to avoid conflicts
         if(openEndstopOn())
         {
-            Serial.println("[Valve::open] Valve " + String(_index + 1) + " already open");
+            DEBUG_PRINTLN("[Valve::open] Valve " + String(_index + 1) + " already open");
             return true;
         }
 
@@ -118,7 +119,7 @@ public:
         {
             if(millis() - start_time > driver_board::valve::OPEN_CLOSE_TIMEOUT_MS)
             {
-                Serial.println("[Valve::open] Valve " + String(_index + 1) + " open timeout - closing");
+                DEBUG_PRINTLN("[Valve::open] Valve " + String(_index + 1) + " open timeout - closing");
                 close();
                 return false;
             }
@@ -140,7 +141,7 @@ public:
         // motor direction is set for all valves so this method should be blocking to avoid conflicts
         if(closedEndstopOn())
         {
-            Serial.println("[Valve::close] Valve " + String(_index + 1) + " already closed");
+            DEBUG_PRINTLN("[Valve::close] Valve " + String(_index + 1) + " already closed");
             return false;
         }
 
@@ -153,7 +154,7 @@ public:
         {
             if(millis() - start_time > driver_board::valve::OPEN_CLOSE_TIMEOUT_MS)
             {
-                Serial.println("[Valve::close] Valve " + String(_index + 1) + " close timeout");
+                DEBUG_PRINTLN("[Valve::close] Valve " + String(_index + 1) + " close timeout");
                 return false;
             }
         }
@@ -179,7 +180,7 @@ public:
             digitalWrite(motor::pin::DIRECTION_ALL, HIGH);
             break;
         default:
-            Serial.println("[Valve::setMotorDirection] Invalid direction, setting to CLOSING");
+            DEBUG_PRINTLN("[Valve::setMotorDirection] Invalid direction, setting to CLOSING");
             digitalWrite(motor::pin::DIRECTION_ALL, LOW);
             break;
         }

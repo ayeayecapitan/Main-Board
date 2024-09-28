@@ -1,8 +1,11 @@
 #pragma once
 #include <Arduino.h>
-#include "shared/data.hpp"
-#include <pins.hpp>
 #include <SD.h>
+
+#include "shared/data.hpp"
+#include "shared/debug.hpp"
+
+#include <main/pins.hpp>
 
 class SDController
 {
@@ -24,14 +27,14 @@ public:
     {
         if(!SD.begin(pinout::digital::SD_CARD))
         {
-            Serial.println(F("SD initialization failed"));
+            DEBUG_PRINTLN(F("SD initialization failed"));
             return;
         }
 
         _file = SD.open("1.txt", FILE_WRITE);
         if(!_file)
         {
-            Serial.println(F("Failed to open log file"));
+            DEBUG_PRINTLN(F("Failed to open log file"));
             return;
         }
 
@@ -42,7 +45,7 @@ public:
     {
         if(!_is_open)
         {
-            Serial.println(F("Log file not open"));
+            DEBUG_PRINTLN(F("Log file not open"));
             return;
         }
 
@@ -65,37 +68,37 @@ public:
   
 //   // Inicjalizacja karty SD
 //   if (!SD.begin(chipSelect)) {
-//     Serial.println("SD card initialization failed!");
+//     DEBUG_PRINTLN("SD card initialization failed!");
 //     return;
 //   }
   
 //   // Znajdź plik z największym indeksem
 //   int maxIndex = findMaxIndex();
-//   Serial.print("Found maximum file index: ");
-//   Serial.println(maxIndex);
+//   DEBUG_PRINT("Found maximum file index: ");
+//   DEBUG_PRINTLN(maxIndex);
 
 //   // Otwórz plik z największym indeksem, aby do niego zapisać
 //   String filename = String(maxIndex) + ".txt";
 //   _file = SD.open(filename, FILE_WRITE);
   
 //   if (_file) {
-//     Serial.print("Writing to file: ");
-//     Serial.println(filename);
+//     DEBUG_PRINT("Writing to file: ");
+//     DEBUG_PRINTLN(filename);
     
 //     // Zapisz dane do pliku
 //     _file.println("Hello, World!");
     
 //     // Zamknij plik po zapisie
 //     _file.close();
-//     Serial.println("Done writing to file.");
+//     DEBUG_PRINTLN("Done writing to file.");
 //   } else {
-//     Serial.println("Failed to open file for writing.");
+//     DEBUG_PRINTLN("Failed to open file for writing.");
 //   }
 
 //   // Indeks do nowego pliku
 //   int newIndex = maxIndex + 1;
-//   Serial.print("New file should have index: ");
-//   Serial.println(newIndex);
+//   DEBUG_PRINT("New file should have index: ");
+//   DEBUG_PRINTLN(newIndex);
 // }
 
 // void loop() {

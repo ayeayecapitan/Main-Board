@@ -2,6 +2,7 @@
 #include "Wire.h"
 #include "shared/ground_command.hpp"
 #include "shared/system_state.hpp"
+#include "shared/debug.hpp"
 
 class MainBoardInterface {
 private:
@@ -19,8 +20,8 @@ public:
         resume();
         _instance = this;
   
-        Serial.print(F("I2C initialized as slave on address "));
-        Serial.println(driver_board::I2C_ADDRESS, HEX);
+        DEBUG_PRINT(F("I2C initialized as slave on address "));
+        DEBUG_PRINTLN(driver_board::I2C_ADDRESS, HEX);
     }
 
     void pause()
@@ -43,21 +44,21 @@ public:
 
     static void requestEvent() {
         if(_instance == nullptr) {
-            Serial.println(F("MainBoardInterface not initialized"));
+            DEBUG_PRINTLN(F("MainBoardInterface not initialized"));
             return;
         }
         Wire.write((uint8_t*)&_instance->_state, sizeof(_instance->_state));
-        Serial.println("STATE -> MAIN");
+        DEBUG_PRINTLN("STATE -> MAIN");
     }
 
     static void receiveEvent(int numBytes) {
         if(_instance == nullptr) {
-            Serial.println(F("MainBoardInterface not initialized"));
+            DEBUG_PRINTLN(F("MainBoardInterface not initialized"));
             return;
         }
 
         if(numBytes != sizeof(GroundCommand)){
-            Serial.println(F("Invalid message size"));
+            DEBUG_PRINTLN(F("Invalid message size"));
             while(Wire.available() > 0) // empty the buffer
                 Wire.read();
             return;
@@ -67,7 +68,7 @@ public:
         GroundCommand new_command;
         auto num_read = Wire.readBytes((uint8_t*)&new_command, sizeof(new_command));
         if(num_read != sizeof(new_command)){
-            Serial.println(F("Error reading command"));
+            DEBUG_PRINTLN(F("Error reading command"));
             return;
         }
         _instance->_command = new_command;

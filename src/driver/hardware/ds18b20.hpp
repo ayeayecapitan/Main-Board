@@ -4,6 +4,9 @@
 #include <DallasTemperature.h>
 #include <OneWire.h>
 
+#include "shared/debug.hpp"
+
+
 class DS18B20Sensors {
     OneWire _ds18b20_one_wire {driver_board::ds18b20::one_wire::PIN};
     DallasTemperature _ds18b20_sensors {&_ds18b20_one_wire};
@@ -14,9 +17,9 @@ class DS18B20Sensors {
 
         void init(){
             _ds18b20_sensors.begin();
-            Serial.print("Number of DS18B20 sensors detected: ");
-            Serial.print(_ds18b20_sensors.getDeviceCount(), DEC);
-            Serial.println(" devices.");
+            DEBUG_PRINT("Number of DS18B20 sensors detected: ");
+            DEBUG_PRINT(_ds18b20_sensors.getDeviceCount(), DEC);
+            DEBUG_PRINTLN(" devices.");
 
             for(uint8_t index = 0; index < driver_board::ds18b20::COUNT; index++)
             {
@@ -24,9 +27,9 @@ class DS18B20Sensors {
 
                 if(!indexValid(index))
                 {
-                    Serial.print("[DS18B20Sensors::init] Index ");
-                    Serial.print(index, DEC);
-                    Serial.println(" out of range");
+                    DEBUG_PRINT("[DS18B20Sensors::init] Index ");
+                    DEBUG_PRINT(index, DEC);
+                    DEBUG_PRINTLN(" out of range");
                     continue;
                 }
 
@@ -34,16 +37,16 @@ class DS18B20Sensors {
                 {
                     // Clear the address if not found (for some reason the library writes the previous address)
                     clearAddress(address);
-                    Serial.print("WARNING: Unable to find address for DS18B20 sensor with index ");
-                    Serial.println(index, DEC);
+                    DEBUG_PRINT("WARNING: Unable to find address for DS18B20 sensor with index ");
+                    DEBUG_PRINTLN(index, DEC);
                     continue;
                 }
 
                 // Set resolution if found
                 _ds18b20_sensors.setResolution(address, driver_board::ds18b20::PRECISION);
 
-                Serial.println("Found address of DS18B20 sensor with index ");
-                Serial.println(index, DEC);
+                DEBUG_PRINTLN("Found address of DS18B20 sensor with index ");
+                DEBUG_PRINTLN(index, DEC);
             }
         }
 
@@ -56,7 +59,7 @@ class DS18B20Sensors {
         {
             if(!indexValid(one_wire_index))
             {
-                Serial.println("[DS18B20Sensors::read] Index out of range");
+                DEBUG_PRINTLN("[DS18B20Sensors::read] Index out of range");
                 return NAN;
             }
 
