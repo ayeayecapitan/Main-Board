@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 namespace network { namespace ground_station {
-    const IPAddress IP = { 172, 16, 18, 182 };  
+    const IPAddress IP = { 172, 16, 18, 180 };  
     unsigned int UDP_PORT = 2000;
 } }
 
