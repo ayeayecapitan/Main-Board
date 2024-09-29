@@ -162,6 +162,7 @@ def main():
     main_board_interface = MainBoardInterface(lambda state: pprint(state))
     main_board_interface.start()
     command = Command()
+    main_board_interface.set_command(command)
 
     import keyboard
 

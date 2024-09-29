@@ -63,8 +63,13 @@ class SpeProbe
 
             if(!_inlet.open())
                 return;
+
             if(!_outlet.open())
+            {
+                // Close the inlet valve if failed to open the outlet valve
+                _inlet.close();
                 return;
+            }
             enablePump();
             _active = true;
         }
