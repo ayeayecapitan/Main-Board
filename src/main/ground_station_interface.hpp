@@ -39,29 +39,29 @@ public:
             uint8_t mac[6] = {MAC[0], MAC[1], MAC[2], MAC[3], MAC[4], MAC[5]}; // NOLINT mac needs to be unsigned char * - not const
             EthernetClass::init(pinout::digital::ETHERNET);
             EthernetClass::begin(mac, network::main_board::IP);
-            DEBUG_PRINT(F("Ethernet communication initialized with IP: "));
+            DEBUG_PRINT("Eth init on: ");
             IP.printTo(Serial);
             DEBUG_PRINTLN();
         }
 
         if (EthernetClass::hardwareStatus() == EthernetNoHardware)
         {
-            DEBUG_PRINTLN(F("Ethernet shield was not found. Can't run without hardware."));
+            DEBUG_PRINTLN("No Eth HW");
             return false;
         }
         if (EthernetClass::linkStatus() == LinkOFF)
         {
-            DEBUG_PRINTLN(F("Ethernet cable is not connected."));
+            DEBUG_PRINTLN("ETH link off");
             return false;
         }
 
         if(_gcs_udp.begin(network::main_board::UDP_PORT) != 1)
         {
-            DEBUG_PRINTLN(F("Failed to start UDP socket."));
+            DEBUG_PRINTLN(F("UDP not staarted."));
             return false;
         }
 
-        DEBUG_PRINT(F("UDP socket started on port "));
+        DEBUG_PRINT("UDP sock start ");
         DEBUG_PRINTLN(network::main_board::UDP_PORT);
 
         _initialized = true;
@@ -72,7 +72,7 @@ public:
     {
         if (!_initialized)
         {
-            DEBUG_PRINTLN(F("Ethernet communication not initialized."));
+            DEBUG_PRINTLN("Eth not initialized.");
             return;
         }
 
@@ -83,14 +83,14 @@ public:
 
         if(packet_size < 0)
         {
-            DEBUG_PRINTLN(F("Error reading packet."));
+            DEBUG_PRINTLN("Error reading packet.");
             return;
         }
 
         if (packet_size != sizeof(_command))
         {
             _gcs_udp.flush();
-            DEBUG_PRINTLN(F("Packet size does not match GroundCommand size. Dropping."));
+            DEBUG_PRINTLN("ETH packet size mismatch. Dropping.");
             return;
         }
 
@@ -115,7 +115,7 @@ public:
     {
         if (!_initialized)
         {
-            DEBUG_PRINTLN(F("Ethernet communication not initialized."));
+            DEBUG_PRINTLN(F("Eth comm not initialized."));
             return;
         }
 
@@ -123,7 +123,7 @@ public:
         _gcs_udp.write((uint8_t *)&state, sizeof(state));
         if (_gcs_udp.endPacket() != 1)
         {
-            DEBUG_PRINTLN(F("Failed to send state to GCS."));
+            DEBUG_PRINTLN(F("Failed to send to GCS."));
         }
     }
 

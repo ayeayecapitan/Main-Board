@@ -7,7 +7,6 @@ import threading
 import time
 from enum import Enum
 from typing import Callable, List
-import numpy
 
 from pprint import pprint
 

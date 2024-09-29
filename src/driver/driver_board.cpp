@@ -100,8 +100,8 @@ void loop()
     if(main_board_interface.commandAvailable(command.timestamp_us))
     {
         command = main_board_interface.latestCommand();
-        DEBUG_PRINT("RECEIVED\t");
-        DEBUG_PRINTLN(command);
+        DEBUG_PRINT("RECEIVED COMMAND\t");
+        // DEBUG_PRINTLN(command);
     }
 
     // If a probe is active, then we only wait for close command

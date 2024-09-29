@@ -3,7 +3,6 @@
 
 #include "shared/debug.hpp"
 
-#include "USBAPI.h"
 #include "driver_board_interface.hpp"
 #include "ground_station_interface.hpp"
 
@@ -15,15 +14,16 @@
 
 #include <avr/wdt.h>
 
+#include "hardware/sd_controller.hpp"
 
-
-DriverBoardInterface driver_board_interface(driver_board::I2C_ADDRESS);
+DriverBoardInterface driver_board_interface;
 GroundStationInterface ground_station_interface;
 
 GroundCommand command;
 uint64_t last_successful_state_request = 0;
 
 EEPROMController eeprom;
+SDController _sd_controller;
 
 void enableWatchdog()
 {
@@ -45,6 +45,7 @@ void setup() {
     ground_station_interface.init();
     driver_board_interface.init();
 
+    _sd_controller.init();
 }
 
 void loop() {
@@ -58,7 +59,7 @@ void loop() {
         command = ground_station_interface.latestCommand();
         driver_board_interface.sendCommand(command);
         // DEBUG_PRINTLN(command);
-        // DEBUG_PRINTLN(F("GCS CMD -> DRIVER"));
+        DEBUG_PRINTLN(F("GCS CMD -> DRIVER"));
     }
     
 
@@ -73,8 +74,8 @@ void loop() {
         {
             last_successful_state_request = millis();
             ground_station_interface.sendState(state);
-            DEBUG_PRINTLN(state.devices);
-            DEBUG_PRINTLN(F("STATE -> GCS"));
+            _sd_controller.log(state);
+            DEBUG_PRINTLN(F("DRIVER STATE -> GCS"));
         }
     }
 }
