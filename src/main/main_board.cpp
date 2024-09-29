@@ -44,6 +44,7 @@ void setup() {
 
     ground_station_interface.init();
     driver_board_interface.init();
+
 }
 
 void loop() {
@@ -74,22 +75,6 @@ void loop() {
             ground_station_interface.sendState(state);
             DEBUG_PRINTLN(state.devices);
             DEBUG_PRINTLN(F("STATE -> GCS"));
-
-            // //print state as hex to serial
-            // auto *state_bytes = (uint8_t *)&state;
-            // for (size_t i = 0; i < sizeof(SystemState); i++)
-            // {
-
-            //     // print leading zero if needed
-            //     if (state_bytes[i] < 0x10)
-            //     {
-            //         DEBUG_PRINT("0");
-            //     }
-            //     DEBUG_PRINT(state_bytes[i], HEX);
-            // }
-            // DEBUG_PRINTLN();
         }
     }
-
-    // TODO save state to SD card
 }

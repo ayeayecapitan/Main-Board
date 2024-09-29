@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <avr/wdt.h>
-#include <RTClib.h>
 
+#include "USBAPI.h"
 #include "shared/data.hpp"
 #include "shared/ground_command.hpp"
 #include "shared/system_state.hpp"
@@ -13,6 +13,7 @@
 #include "chemical_probe.hpp"
 #include "shared/debug.hpp"
 
+#include <TinyGPS++.h>
 
 MainBoardInterface main_board_interface;
 
@@ -27,8 +28,6 @@ SpeProbe spe_probes[probe::COUNT] {
 
 SystemState state;
 GroundCommand command;
-
-RTC_DS3231 rtc;
 
 void enableWatchdog()
 {
@@ -45,8 +44,6 @@ void setup()
     delay(1500); // Workaround for the serial monitor permissions issue - see after_upload in env.py
 
     DEBUG_PRINTLN("STARTING DRIVER BOARD");
-
-    rtc.begin();
 
     sensors.init();
     main_board_interface.init();
@@ -76,14 +73,12 @@ SpeProbe * getNextProbeToStart(GroundCommand * command)
 void loop()
 {
     //wdt_reset();
-    // Update timestamp
-    state.timestamp_us = rtc.now().unixtime();
 
-    // Update sensors
+    // Update sensors, disable I2C interrupts because some sensors are read using I2C
+    state.timestamp_us = millis() * 1000;
+    // main_board_interface.pause();
     state.sensors = sensors.read();
-
-    // Print sensors data
-    DEBUG_PRINTLN(state);
+    // main_board_interface.resume();
 
     // Update valve states
     for (auto &probe : spe_probes)
@@ -93,11 +88,13 @@ void loop()
     state.devices.spe_pump_state = SpeProbe::pumpState();
     state.devices.chemical_pump_state = ChemicalProbe::pumpState();
 
+
     // Disable I2C interrupts
     main_board_interface.pause();
 
     // Push new state to main board interface
     main_board_interface.setState(state);
+    DEBUG_PRINTLN(state);
    
     // Check if new command is available
     if(main_board_interface.commandAvailable(command.timestamp_us))
@@ -107,10 +104,8 @@ void loop()
         DEBUG_PRINTLN(command);
     }
 
-    // Check if any probe is ON
+    // If a probe is active, then we only wait for close command
     SpeProbe * active_probe = getActiveProbe();
-
-    // If a probe is active, then we can only wait for close command
     if (active_probe != nullptr)
     {
         // Check if the command is to close the active probe
@@ -148,5 +143,6 @@ void loop()
 
     // Enable I2C interrupts
     main_board_interface.resume();
+
     delay(100);
 }

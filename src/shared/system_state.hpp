@@ -69,7 +69,7 @@ SystemState::SensorsData::operator String() const
         if (i < temperature::COUNT - 1)
             str += ", ";     
     }
-    str += "\nPRESSURE\t" + String(pressure_pa) + " Pa\n";
+    str += "]\nPRESSURE\t" + String(pressure_pa) + " Pa\n";
     str += String(gps) + "\n";
     str += "\n" + String(power_supply) + "\n";
     return str;

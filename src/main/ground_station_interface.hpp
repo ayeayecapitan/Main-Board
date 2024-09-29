@@ -20,6 +20,7 @@ class GroundStationInterface
 
     bool _command_available = false;
     GroundCommand _command;
+    
 
 public:
     // Delete copy and move constructors
