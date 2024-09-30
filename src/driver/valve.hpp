@@ -4,7 +4,7 @@
 #include "shared/data.hpp"
 #include "shared/debug.hpp"
 
-#define SIMULATION
+// #define SIMULATION
 
 class Valve
 {
@@ -121,6 +121,7 @@ public:
             {
                 DEBUG_PRINTLN("[Valve::open] Valve " + String(_index + 1) + " open timeout - closing");
                 close();
+                disableMotor();
                 return false;
             }
         }
@@ -155,6 +156,7 @@ public:
             if(millis() - start_time > driver_board::valve::OPEN_CLOSE_TIMEOUT_MS)
             {
                 DEBUG_PRINTLN("[Valve::close] Valve " + String(_index + 1) + " close timeout");
+                disableMotor();
                 return false;
             }
         }
