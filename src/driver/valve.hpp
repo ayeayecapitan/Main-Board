@@ -143,7 +143,7 @@ public:
         if(closedEndstopPressed())
         {
             DEBUG_PRINTLN("[Valve::close] Valve " + String(_index + 1) + " already closed");
-            return false;
+            return true;
         }
 
         auto start_time = millis();
