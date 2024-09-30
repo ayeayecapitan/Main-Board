@@ -58,7 +58,7 @@ public:
 
     void disableMotor() { digitalWrite(_descriptor.motor_pin, LOW); }
 
-    bool openEndstopOn() const
+    bool openEndstopPressed() const
     {
         #if defined(SIMULATION)
         return _simulation_open_endstop == LOW;
@@ -67,7 +67,7 @@ public:
         return digitalRead(_descriptor.open_endstop_pin) == LOW;
     }
 
-    bool closedEndstopOn() const {
+    bool closedEndstopPressed() const {
 
         #if defined(SIMULATION)
         return _simulation_closed_endstop == LOW;
@@ -79,8 +79,8 @@ public:
 
     valve::state state()
     {
-        auto openEndstop = openEndstopOn();
-        auto closedEndstop = closedEndstopOn();
+        auto openEndstop = openEndstopPressed();
+        auto closedEndstop = closedEndstopPressed();
 
         if(!openEndstop && closedEndstop)
             return valve::state::CLOSED;
@@ -104,7 +104,7 @@ public:
     bool open()
     {
         // motor direction is set for all valves so this method should be blocking to avoid conflicts
-        if(openEndstopOn())
+        if(openEndstopPressed())
         {
             DEBUG_PRINTLN("[Valve::open] Valve " + String(_index + 1) + " already open");
             return true;
@@ -115,7 +115,7 @@ public:
         enableMotor();
 
         #if not defined(SIMULATION)
-        while(!openEndstopOn())
+        while(!openEndstopPressed())
         {
             if(millis() - start_time > driver_board::valve::OPEN_CLOSE_TIMEOUT_MS)
             {
@@ -140,7 +140,7 @@ public:
     bool close()
     {
         // motor direction is set for all valves so this method should be blocking to avoid conflicts
-        if(closedEndstopOn())
+        if(closedEndstopPressed())
         {
             DEBUG_PRINTLN("[Valve::close] Valve " + String(_index + 1) + " already closed");
             return false;
@@ -151,7 +151,7 @@ public:
         enableMotor();
 
         #if not defined(SIMULATION)
-        while(!closedEndstopOn())
+        while(!closedEndstopPressed())
         {
             if(millis() - start_time > driver_board::valve::OPEN_CLOSE_TIMEOUT_MS)
             {
